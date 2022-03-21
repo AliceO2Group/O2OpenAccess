@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+mkdir -p BUILD INSTALL
+rm -rf BUILD/*
+
+export WORK_DIR="/cvmfs/alice.cern.ch" ALIBUILD_ARCH_PREFIX="el7-x86_64/Packages"
+
+source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/libjalienO2/0.1.3-16/etc/profile.d/init.sh
+source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/O2Physics/nightly-20220316-1/etc/profile.d/init.sh
+
+pushd BUILD
+cmake3 -DCMAKE_INSTALL_PREFIX=/home/adrian/work-ALICE/O2openaccess/INSTALL -DBUILD_TEST_ROOT_MACROS=OFF ..
+
+popd
+
+
