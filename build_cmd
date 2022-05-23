@@ -5,9 +5,9 @@ rm -rf BUILD/*
 
 export WORK_DIR="/cvmfs/alice.cern.ch" ALIBUILD_ARCH_PREFIX="el7-x86_64/Packages" DISABLE_GPU=1
 
-source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/JAliEn-ROOT/0.6.6-114/etc/profile.d/init.sh
-source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/libjalienO2/0.1.3-16/etc/profile.d/init.sh
-source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/O2Physics/nightly-20220329-1/etc/profile.d/init.sh
+source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/JAliEn-ROOT/0.6.6-124/etc/profile.d/init.sh
+source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/libjalienO2/0.1.3-20/etc/profile.d/init.sh
+source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/O2Physics/nightly-20220522-1/etc/profile.d/init.sh
 
 CMAKE_DEBUG_OPTS=""
 [[ -n ${CMAKE_DO_TRACE} ]] && CMAKE_DEBUG_OPTS=" --debug-output --debug-find --trace --trace-expand --trace-format=human --trace-redirect=cmake_trace.log "
