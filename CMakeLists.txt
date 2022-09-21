@@ -38,7 +38,7 @@ endif()
 
 # Dependencies
 find_package(O2 CONFIG REQUIRED)
-find_package(O2Physics REQUIRED)
+find_package(O2Physics CONFIG REQUIRED)
 
 include(O2PhysicsDefineOptions)
 o2physics_define_options()
@@ -55,7 +55,7 @@ include(O2PhysicsAddExecutable)
 include(O2PhysicsAddWorkflow)
 include(O2PhysicsAddLibrary)
 include(O2PhysicsAddHeaderOnlyLibrary)
-#include(O2PhysicsTargetRootDictionary)
+include(O2PhysicsTargetRootDictionary)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
