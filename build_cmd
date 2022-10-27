@@ -40,7 +40,7 @@ done
 
 set -- "${ARGS[@]}" # restore positional parameters
 
-mkdir -p BUILD INSTALL
+mkdir -p BUILD INSTALL logs
 rm -rf BUILD/* INSTALL/*
 
 if [[ -n "${USE_LOCAL_SW}" ]]; then
@@ -66,21 +66,20 @@ echo -e "Sourcing ${O2PHYSICS_INIT}\n"
 source "${O2PHYSICS_INIT}"
 echo -e "Done\n"
 
-env > compilation_env.txt
+env | sort > logs/compilation_env.txt
 
-pushd BUILD
+pushd BUILD &> /dev/null || exit 1
 cmake3 -DCMAKE_INSTALL_PREFIX=../INSTALL -DBUILD_TEST_ROOT_MACROS=OFF ${CMAKE_DEBUG_OPTS} \
     -DENABLE_CUDA=OFF -DENABLE_OPENCL1=OFF -DENABLE_OPENCL2=OFF -DENABLE_HIP=OFF \
     -DLIBJALIENO2_INCLUDE_DIR=${LIBJALIENO2_ROOT}/include -DLIBJALIENO2_LIBPATH=${LIBJALIENO2_ROOT}/lib/libjalienO2.so \
     -DJALIEN_ROOT_INCLUDE_DIR=${JALIEN_ROOT_ROOT}/include -DJAliEnRoot_LIB=${JALIEN_ROOT_ROOT}/lib/libJAliEnROOT.so \
-    .. | tee cmake_out.txt
-
-cp cmake_trace.log ../
-
+    .. &> ../logs/cmake_out.log
 RET=$?
 
-[[ "${RET}" == 0 ]] && make -j4 || { popd; echo "cmake failure"; exit ${RET}; }
-[[ "${RET}" == 0 ]] && make install || { popd;  echo "make failure"; exit ${RET}; }
+[[ -e cmake_trace.log ]] && cp cmake_trace.log ../logs/
+cp -t ../logs/ CMakeFiles/CMake{Output,Error}.log
 
-popd
+[[ "${RET}" == 0 ]] && make -j4 || { popd  &> /dev/null ; echo "cmake failure"; exit ${RET}; }
+[[ "${RET}" == 0 ]] && make install || { popd &> /dev/null ;  echo "make failure"; exit ${RET}; }
+popd &> /dev/null
 
