@@ -1,19 +1,53 @@
 #!/usr/bin/env bash
 
-USE_LOCAL_SW=""
-export LOCAL_TAG="latest-o2physics-o2"
+export USE_LOCAL_SW=""
+export CMAKE_DEBUG_OPTS=""
+export TAGNAME=""
 
-CMAKE_DEBUG_OPTS="1"
-[[ -n ${CMAKE_DO_TRACE} ]] && CMAKE_DEBUG_OPTS=" --debug-output --debug-find --trace --trace-expand --trace-format=human --trace-redirect=cmake_trace.log "
+# Defaults
+export LOCAL_TAG="latest-o2physics-o2"
+export CVMFS_TAG="nightly-20221027-1"
+
+ARGS=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    local)
+      export USE_LOCAL_SW="1"
+      shift
+      ;;
+    debug)
+      export CMAKE_DEBUG_OPTS=" --debug-output --debug-find --trace --trace-expand --trace-format=human --trace-redirect=cmake_trace.log "
+      shift
+      ;;
+    -tag)
+      TAGNAME="${2}"
+      shift # past argument
+      shift # past value
+      ;;
+    -h|--help)
+      echo -e "local\t: use the default or specified tag to construct the path to init.sh of O2Physics
+debug\t: enable cmake debug options
+-t tag_name\t: specify a string for the software installation name (either local or cvmfs)
+"
+      exit 0
+      ;;
+    *)
+      ARGS+=("${1}") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${ARGS[@]}" # restore positional parameters
 
 mkdir -p BUILD INSTALL
 rm -rf BUILD/* INSTALL/*
 
 if [[ -n "${USE_LOCAL_SW}" ]]; then
-    export O2PHYS_TAG="${LOCAL_TAG}"
+    export O2PHYS_TAG=${TAGNAME:-${LOCAL_TAG}}
     export WORK_DIR="${ALIBUILD_WORK_DIR}" ALIBUILD_ARCH_PREFIX="$(aliBuild architecture)" DISABLE_GPU=1
 else
-    export O2PHYS_TAG="nightly-20221027-1"
+    export O2PHYS_TAG=${TAGNAME:-${CVMFS_TAG}}
     export WORK_DIR="/cvmfs/alice.cern.ch" ALIBUILD_ARCH_PREFIX="el7-x86_64/Packages" DISABLE_GPU=1
 fi
 
@@ -24,14 +58,21 @@ fi
 # source ${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/JAliEn-ROOT/${BUILD_TAG}/etc/profile.d/init.sh
 # source ${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/libjalienO2/${BUILD_TAG}/etc/profile.d/init.sh
 # source ${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2/${BUILD_TAG}/etc/profile.d/init.sh
-source "${WORK_DIR}"/"${ALIBUILD_ARCH_PREFIX}"/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh
+
+O2PHYSICS_INIT="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh"
+
+echo -e "Sourcing ${O2PHYSICS_INIT}\n"
+[[ ! -f "${O2PHYSICS_INIT}" ]] && { echo "init.sh not available"; exit 1; }
+source "${O2PHYSICS_INIT}"
+echo -e "Done\n"
+
 env > compilation_env.txt
 
 pushd BUILD
 cmake3 -DCMAKE_INSTALL_PREFIX=../INSTALL -DBUILD_TEST_ROOT_MACROS=OFF ${CMAKE_DEBUG_OPTS} \
     -DLIBJALIENO2_INCLUDE_DIR=${LIBJALIENO2_ROOT}/include -DLIBJALIENO2_LIBPATH=${LIBJALIENO2_ROOT}/lib/libjalienO2.so \
     -DJALIEN_ROOT_INCLUDE_DIR=${JALIEN_ROOT_ROOT}/include -DJAliEnRoot_LIB=${JALIEN_ROOT_ROOT}/lib/libJAliEnROOT.so \
-    .. 
+    ..
 
 RET=$?
 
