@@ -19,11 +19,11 @@
 #include "Framework/AnalysisTask.h"
 #include "Framework/HistogramRegistry.h"
 #include "Framework/AnalysisDataModel.h"
-#include "Common/DataModel/EventSelection.h"
-#include "Common/CCDB/TriggerAliases.h"
-#include "Common/DataModel/Centrality.h"
-#include "Common/DataModel/Multiplicity.h"
-#include "Common/DataModel/TrackSelectionTables.h"
+#include "EventSelection.h"
+#include "TriggerAliases.h"
+#include "Centrality.h"
+#include "Multiplicity.h"
+#include "TrackSelectionTables.h"
 
 using namespace o2;
 using namespace o2::framework;
