@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+CVMFS2GO="https://raw.githubusercontent.com/adriansev/cvmfs2go/master/cvmfs2go"
+
+curl -O "${CVMFS2GO}" && chmod +x cvmfs2go
+
+git commit -m "cvmfs2go update" cvmfs2go && git push
+
