@@ -32,7 +32,7 @@ using namespace o2::framework::expressions;
 struct flowTracksPerCollision {
 
   using BCsWithRun2Infos = soa::Join<aod::BCs, aod::Run2BCInfos>;
-  using Colls_EvSels_Mults_Cents = soa::Join<aod::Collisions, aod::EvSels, aod::Mults, aod::CentV0Ms, aod::CentRun2CL0s, aod::CentRun2CL1s>;
+  using Colls_EvSels_Mults_Cents = soa::Join<aod::Collisions, aod::EvSels, aod::Mults, aod::CentRun2V0Ms, aod::CentRun2CL0s, aod::CentRun2CL1s>;
   using FilteredCollisions = soa::Filtered<Colls_EvSels_Mults_Cents>;
   using TrackCandidates = soa::Join<aod::Tracks, aod::TracksExtra, aod::TrackSelection>;
   using FilteredTracks = soa::Filtered<TrackCandidates>;
@@ -51,7 +51,7 @@ struct flowTracksPerCollision {
   HistogramRegistry histos{"Histos", {}, OutputObjHandlingPolicy::AnalysisObject};
 
   Filter collisionFilter = (aod::collision::flags & (uint16_t)aod::collision::CollisionFlagsRun2::Run2VertexerTracks) == (uint16_t)aod::collision::CollisionFlagsRun2::Run2VertexerTracks;
-  Filter trackFilter = ((aod::track::isGlobalTrack == (uint8_t) true) || (aod::track::isGlobalTrackSDD == (uint8_t) true));
+  Filter trackFilter = ((requireGlobalTrackInFilter()) || (aod::track::isGlobalTrackSDD == (uint8_t) true));
 
   template <typename T>
   void fillAPt(const T& track, double cent, double vn)
@@ -137,7 +137,7 @@ struct flowTracksPerCollision {
     if (TMath::Abs(zvtx) > vtxCut)
       return;
 
-    auto v0Centr = collision.centV0M();
+    auto v0Centr = collision.centRun2V0M();
     auto cl1Centr = collision.centRun2CL1();
     auto cl0Centr = collision.centRun2CL0();
 
@@ -159,8 +159,8 @@ struct flowTracksPerCollision {
 
     auto nITSTrkls = collision.multTracklets();
 
-    auto multV0a = collision.multV0A();
-    auto multV0c = collision.multV0C();
+    auto multV0a = collision.multFV0A();
+    auto multV0c = collision.multFV0C();
     auto multV0Tot = multV0a + multV0c;
     auto multV0aOn = bc.v0TriggerChargeA();
     auto multV0cOn = bc.v0TriggerChargeC();
