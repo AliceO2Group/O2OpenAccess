@@ -5,8 +5,9 @@ export CMAKE_DEBUG_OPTS=""
 export TAGNAME=""
 
 # Defaults
-export LOCAL_TAG="latest-o2physics-o2"
-export CVMFS_TAG="nightly-20221027-1"
+#export LOCAL_TAG="latest-o2physics-o2"
+export LOCAL_TAG="latest-o2physics_cmake-o2"
+export CVMFS_TAG="nightly-20230320-1"
 
 ARGS=()
 while [[ $# -gt 0 ]]; do
@@ -60,8 +61,8 @@ fi
 # source ${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2/${BUILD_TAG}/etc/profile.d/init.sh
 
 O2PHYSICS_INIT="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh"
-
 echo -e "Sourcing ${O2PHYSICS_INIT}\n"
+
 [[ ! -f "${O2PHYSICS_INIT}" ]] && { echo "init.sh not available"; exit 1; }
 source "${O2PHYSICS_INIT}"
 echo -e "Done\n"
