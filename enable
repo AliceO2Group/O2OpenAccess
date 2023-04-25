@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+[[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0})"; exit 1; }
+
+SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
+
+## HELPERS
+SourceIfValid () { [[ -f $1 ]] && source $1; }
+
+# Check if 2nd arg is found in the list(terms delimited by ":") in the 1st arg
+ITEM_IN_PATH () {
+local LIST_STR ITEM path_arr n
+[[ -z "${1}" ]] && return 1;
+[[ -z "${2}" ]] && return 1;
+LIST_STR="${1}"
+ITEM="${2}"
+IFS=':' read -ra path_arr <<< "${LIST_STR}"
+for (( n=0; n < ${#path_arr[*]}; n++)); do [[ "$(realpath -q ${ITEM})" == "$(realpath -q ${path_arr[n]})" ]] && return 0; done
+return 1;
+}
+
+# Insert/Add to $PATH if and only if not already present
+__PATH_INS () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${PATH}" ${1} && return 0; export PATH="${1}${PATH:+:}${PATH}"; }
+__PATH_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${PATH}" ${1} && return 0; export PATH="${PATH}${PATH:+:}${1}"; }
+
+# Insert/Add to $LD_LIBRARY_PATH if and only if not already present
+__LDLIB_INS () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" ${1} && return 0; export LD_LIBRARY_PATH="${1}${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}"; }
+__LDLIB_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" ${1} && return 0; export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}${LD_LIBRARY_PATH:+:}${1}"; }
+
+######################################################################
+
+# Default values for O2Physics builds
+export LOCAL_TAG="latest-o2physics-o2"
+export CVMFS_TAG="nightly-20230423-1"
+
+export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
+export O2OPENACCESS_SW_TAG_CVMFS=${O2OPENACCESS_SW_TAG_CVMFS:-${CVMFS_TAG}}
+
+# if set, use the local installation
+export O2OPENACCESS_USE_LOCAL=${O2OPENACCESS_USE_LOCAL:-}
+O2PHYS_TAG=${O2OPENACCESS_USE_LOCAL:-${O2OPENACCESS_SW_TAG_CVMFS}}  # defaults to cvmfs tag
+
+if [[ -n "${O2OPENACCESS_USE_LOCAL}" ]]; then
+    O2PHYS_TAG="${O2OPENACCESS_SW_TAG_LOCAL}"
+    export WORK_DIR="${ALIBUILD_WORK_DIR}" ALIBUILD_ARCH_PREFIX="$(aliBuild architecture)" DISABLE_GPU=1
+else
+    stat "/cvmfs/alice.cern.ch" &> /dev/null || { echo "CVMFS is not available!! >>> ${O2OPENACCESS_SW_TAG_CVMFS} <<< is not accessible!"; return 1; }
+    export WORK_DIR="/cvmfs/alice.cern.ch" ALIBUILD_ARCH_PREFIX="el7-x86_64/Packages" DISABLE_GPU=1
+fi
+
+O2PHYSICS_INIT="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh"
+[[ ! -f "${O2PHYSICS_INIT}" ]] && { echo "${O2PHYSICS_INIT} not available"; return 1; }
+source "${O2PHYSICS_INIT}"
+
+__PATH_INS "${SCRIPT_DIR}/INSTALL/bin"
+
