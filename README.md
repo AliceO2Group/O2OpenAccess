@@ -3,15 +3,15 @@ Repository for ALICE open access software
 
 ### Environment setup
 
-The environment (the package dependencies and the package path) is setup by running:
-`source enable`
+The environment (the package dependencies and the package path) is setup by running:  
+`source enable`  
 
-There are a few of steering env vars:
-O2OPENACCESS_USE_LOCAL : set to any value to use the user-defined local tag or the default one (see below)
-O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed); It has a default of: latest-o2physics-o2
-O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: nightly-20230423-1
+There are a few of steering env vars:  
+O2OPENACCESS_USE_LOCAL : set to any value to use the user-defined local tag or the default one (see below)  
+O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed); It has a default of: latest-o2physics-o2  
+O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: nightly-20230423-1  
 
-The default behaviour is that O2OPENACCESS_USE_LOCAL is not set, and cvmfs dependency will be used
+The default behaviour is that O2OPENACCESS_USE_LOCAL is not set, and cvmfs dependency will be used  
 
 
 ### Building
