@@ -109,7 +109,7 @@ struct flowTracksPerCollision {
 
   void process(FilteredCollisions::iterator const& collision, BCsWithRun2Infos const& bcs, FilteredTracks const& tracks)
   {
-    if (eventSelection && !collision.alias()[kINT7]) {
+    if (eventSelection && !collision.alias_bit(kINT7)) {
       // LOGF(info, "Collision index : %d skipped not kINT7", collision.index());
       return;
     }
