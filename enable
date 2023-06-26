@@ -32,7 +32,7 @@ __LDLIB_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" 
 
 # Default values for O2Physics builds
 export LOCAL_TAG="latest-o2physics-o2"
-export CVMFS_TAG="nightly-20230423-1"
+export CVMFS_TAG="daily-20230626-0200-1"
 
 export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
 export O2OPENACCESS_SW_TAG_CVMFS=${O2OPENACCESS_SW_TAG_CVMFS:-${CVMFS_TAG}}
