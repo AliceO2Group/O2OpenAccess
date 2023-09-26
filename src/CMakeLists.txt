@@ -13,4 +13,4 @@
 o2physics_add_dpl_workflow(flow-analysis
                   SOURCES flowAnalysis.cxx
                   PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore
-                  COMPONENT_NAME AnalysisTutorial)
+                  COMPONENT_NAME MyAnalysis)

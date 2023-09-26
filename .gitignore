@@ -1,5 +1,7 @@
 BUILD/**
 INSTALL/**
+bin/**
+share/**
 
 # Prerequisites
 *.d

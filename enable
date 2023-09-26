@@ -51,7 +51,12 @@ fi
 
 O2PHYSICS_INIT="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh"
 [[ ! -f "${O2PHYSICS_INIT}" ]] && { echo "${O2PHYSICS_INIT} not available"; return 1; }
-source "${O2PHYSICS_INIT}"
 
-__PATH_INS "${SCRIPT_DIR}/INSTALL/bin"
+if [[ -n "${O2OPENACCESS_USE_LOCAL}" ]]; then
+    source "${O2PHYSICS_INIT}"
+else
+    source "${O2PHYSICS_INIT}" &> /dev/null  # if we load from cvmfs ignore any errors
+fi
+
+__PATH_INS "${SCRIPT_DIR}/bin"
 

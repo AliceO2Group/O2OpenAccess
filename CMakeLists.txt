@@ -60,4 +60,4 @@ include(O2PhysicsTargetRootDictionary)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Main targets of the project in various subdirectories. Order matters.
-add_subdirectory(Tutorials)
+add_subdirectory(src)
