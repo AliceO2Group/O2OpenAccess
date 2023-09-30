@@ -30,6 +30,9 @@ __LDLIB_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" 
 
 ######################################################################
 
+## if O2PHYSICS present (environemnt already enabled then just add path and exit)
+[[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/bin" ; exit ; }
+
 # Default values for O2Physics builds
 export LOCAL_TAG="latest-o2physics-o2"
 export CVMFS_TAG="daily-20230926-0200-1"
