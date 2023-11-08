@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
+###   DEFAULTS   ###
+export LOCAL_TAG="latest-o2physics-o2"
+export CVMFS_TAG="daily-20230926-0200-1"
+
+# Steering of the environment:
+#
+# O2OPENACCESS_SW_TAG_LOCAL : set the string name for local installation
+# O2OPENACCESS_SW_TAG_CVMFS : set the string name for CVMFS installation
+#
+# O2OPENACCESS_USE_LOCAL : set to anything to use the local tag (and installation) instead of CVMFS (which is the default)
+
+#####################################################
+
 [[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0})"; exit 1; }
 
 SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
@@ -32,10 +45,6 @@ __LDLIB_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" 
 
 ## if O2PHYSICS present (environemnt already enabled then just add path and exit)
 [[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/bin" ; exit ; }
-
-# Default values for O2Physics builds
-export LOCAL_TAG="latest-o2physics-o2"
-export CVMFS_TAG="daily-20230926-0200-1"
 
 export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
 export O2OPENACCESS_SW_TAG_CVMFS=${O2OPENACCESS_SW_TAG_CVMFS:-${CVMFS_TAG}}
