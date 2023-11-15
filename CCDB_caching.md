@@ -1,6 +1,6 @@
 # CCDB caching
 
-Info from (AliceO2)[https://github.com/AliceO2Group/AliceO2/tree/dev/CCDB#local-object-caching-and-testing-feature]
+Info from [AliceO2](https://github.com/AliceO2Group/AliceO2/tree/dev/CCDB#local-object-caching-and-testing-feature)
 
 ## Local object caching and testing feature
 
@@ -13,7 +13,7 @@ Then it suffices to put the ROOT file containing the ccdb-object as filename `sn
 Then testing can proceed without actually having to upload the CCDB object to a server.
 
 
-(Command line tools)[https://github.com/AliceO2Group/AliceO2/blob/dev/CCDB/README.md#command-line-tools]
+[Command line tools](https://github.com/AliceO2Group/AliceO2/blob/dev/CCDB/README.md#command-line-tools)
 
 ## Command line tools
 
@@ -46,4 +46,10 @@ and facilitate the following tasks:
      ```
      Lists all keys and stored types in a ROOT file (downloaded with tool `o2-ccdb-downloadccdbfile`) and prints a summary about the attached meta-information.
 
+
+## CCDB mirror
+
+`alien.py ccdb -mirror` enable possibility to mirror a given selection content on disk.
+The on-disk format respects CCDB reference and can be served by a java based http server: [ccdb-local](https://gitlab.cern.ch/grigoras/ccdb-local)
+After the server is started, the configured endpoint should be used as CCDB server name.
 
