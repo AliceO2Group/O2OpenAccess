@@ -10,7 +10,7 @@
 # or submit itself to any jurisdiction.
 
 
-o2physics_add_dpl_workflow(flow-analysis
+o2physics_add_dpl_workflow(flow1
                   SOURCES flowAnalysis.cxx
                   PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore
-                  COMPONENT_NAME MyAnalysis)
+                  COMPONENT_NAME OpenData)
