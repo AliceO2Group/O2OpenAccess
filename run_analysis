@@ -13,7 +13,7 @@ export ALICEO2_CCDB_NOTOKENCHECK="1"
 CCDB_URL="http://issaf.spacescience.ro:10080"
 CCDB="--ccdb-url ${CCDB_URL}"
 
-RUN2_JSON="--configuration json://$(realpath config.json)"
+JSON="--configuration json://$(realpath config.json)"
 
 # These will implement per task flags for each case
 # set to anything to enable, set to empty to disable
@@ -30,7 +30,6 @@ DO_DUMP_JSON=""
 ##############################
 [[ -n "${IS_MC}" ]] && SELECT_MC="--isMC"
 
-JSON="${RUN2_JSON}"
 PROC_RUN="--processRun2";
 SET_RUN=""; 
 
