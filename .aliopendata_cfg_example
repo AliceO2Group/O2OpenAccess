@@ -1,0 +1,2 @@
+export O2OPENACCESS_USE_LOCAL="y"
+export O2OPENACCESS_SW_TAG_LOCAL="latest-o2physics-o2"

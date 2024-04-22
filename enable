@@ -2,7 +2,7 @@
 
 ###   DEFAULTS   ###
 export LOCAL_TAG="latest-o2physics-o2"
-export CVMFS_TAG="daily-20240304-0100-1"
+export CVMFS_TAG="daily-20240423-0100-1"
 
 # Steering of the environment:
 #
@@ -46,29 +46,28 @@ __LDLIB_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" 
 ## if O2PHYSICS present (environemnt already enabled then just add path and exit)
 [[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/bin" ; exit ; }
 
+# apply local customizations
+SourceIfValid ~/.aliopendata_cfg  # apply general customization user-level
+SourceIfValid ./.aliopendata_cfg  # apply local directory customization
+
+export O2OPENACCESS_USE_LOCAL=${O2OPENACCESS_USE_LOCAL:-}   # if set, use the local installation
 export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
 export O2OPENACCESS_SW_TAG_CVMFS=${O2OPENACCESS_SW_TAG_CVMFS:-${CVMFS_TAG}}
-
-# if set, use the local installation
-export O2OPENACCESS_USE_LOCAL=${O2OPENACCESS_USE_LOCAL:-}
-O2PHYS_TAG=${O2OPENACCESS_USE_LOCAL:-${O2OPENACCESS_SW_TAG_CVMFS}}  # defaults to cvmfs tag
 
 if [[ -n "${O2OPENACCESS_USE_LOCAL}" ]]; then
     O2PHYS_TAG="${O2OPENACCESS_SW_TAG_LOCAL}"
     export WORK_DIR="${ALIBUILD_WORK_DIR}" ALIBUILD_ARCH_PREFIX="$(aliBuild architecture)" DISABLE_GPU=1
 else
     stat "/cvmfs/alice.cern.ch" &> /dev/null || { echo "CVMFS is not available!! >>> ${O2OPENACCESS_SW_TAG_CVMFS} <<< is not accessible!"; return 1; }
+    O2PHYS_TAG="${O2OPENACCESS_SW_TAG_CVMFS}"
     export WORK_DIR="/cvmfs/alice.cern.ch" ALIBUILD_ARCH_PREFIX="el7-x86_64/Packages" DISABLE_GPU=1
 fi
+[[ -z "${O2PHYS_TAG}" ]] && { echo "O2PHYS_TAG is not set at this point, this should not happen!"; exit 1; }
 
 O2PHYSICS_INIT="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh"
 [[ ! -f "${O2PHYSICS_INIT}" ]] && { echo "${O2PHYSICS_INIT} not available"; return 1; }
 
-if [[ -n "${O2OPENACCESS_USE_LOCAL}" ]]; then
-    source "${O2PHYSICS_INIT}"
-else
-    source "${O2PHYSICS_INIT}" &> /dev/null  # if we load from cvmfs ignore any errors
-fi
+SourceIfValid "${O2PHYSICS_INIT}" &> /dev/null  # if we load from cvmfs ignore any errors
 
 __PATH_INS "${SCRIPT_DIR}/bin"
 
