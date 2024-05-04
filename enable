@@ -2,7 +2,7 @@
 
 ###   DEFAULTS   ###
 export LOCAL_TAG="latest-o2physics-o2"
-export CVMFS_TAG="daily-20240423-0100-1"
+export CVMFS_TAG="daily-20240504-0200-1"
 
 # Steering of the environment:
 #
