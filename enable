@@ -64,7 +64,16 @@ else
 fi
 [[ -z "${O2PHYS_TAG}" ]] && { echo "O2PHYS_TAG is not set at this point, this should not happen!"; exit 1; }
 
-O2PHYSICS_INIT="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}/etc/profile.d/init.sh"
+NOT_FOUND=""
+O2PHYS_DIR="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}"
+[[ ! -d "${O2PHYS_DIR}" ]] && { ALIBUILD_ARCH_PREFIX="el9-x86_64/Packages"; NOT_FOUND="1"; }
+
+if [[ -n "${NOT_FOUND}" ]]; then
+    O2PHYS_DIR="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}"
+    [[ ! -d "${O2PHYS_DIR}" ]] && { echo "O2Physics was not found in ${O2PHYS_DIR}"; exit 1; }
+fi
+
+O2PHYSICS_INIT="${O2PHYS_DIR}/etc/profile.d/init.sh"
 [[ ! -f "${O2PHYSICS_INIT}" ]] && { echo "${O2PHYSICS_INIT} not available"; return 1; }
 
 SourceIfValid "${O2PHYSICS_INIT}" &> /dev/null  # if we load from cvmfs ignore any errors
