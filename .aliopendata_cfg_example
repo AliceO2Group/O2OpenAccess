@@ -1,2 +1,4 @@
 export O2OPENACCESS_USE_LOCAL="y"
 export O2OPENACCESS_SW_TAG_LOCAL="latest-o2physics-o2"
+# export O2OPENACCESS_SW_TAG_CVMFS="daily-20240504-0200-1"
+
