@@ -44,7 +44,7 @@ __LDLIB_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${LD_LIBRARY_PATH}" 
 ######################################################################
 
 ## if O2PHYSICS present (environemnt already enabled then just add path and exit)
-[[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/bin" ; exit ; }
+[[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/bin" ; return 0 ; }
 
 # apply local customizations
 SourceIfValid ~/.aliopendata_cfg  # apply general customization user-level
