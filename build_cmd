@@ -34,7 +34,8 @@ pushd ${SCRIPT_DIR} &> /dev/null
 mkdir -p BUILD
 rm -rf BUILD/*
 
-pushd BUILD &> /dev/null || exit 1
+pushd BUILD &> /dev/null || { echo "Could not cd to BUILD dir"; exit 1; }
+
 cmake -DCMAKE_INSTALL_PREFIX=.. -DBUILD_TEST_ROOT_MACROS=OFF ${CMAKE_DEBUG_OPTS} \
     -DENABLE_CUDA=OFF -DENABLE_OPENCL1=OFF -DENABLE_OPENCL2=OFF -DENABLE_HIP=OFF \
     -DLIBJALIENO2_INCLUDE_DIR=${LIBJALIENO2_ROOT}/include -DLIBJALIENO2_LIBPATH=${LIBJALIENO2_ROOT}/lib/libjalienO2.so \
@@ -42,11 +43,12 @@ cmake -DCMAKE_INSTALL_PREFIX=.. -DBUILD_TEST_ROOT_MACROS=OFF ${CMAKE_DEBUG_OPTS}
     .. &> cmake_out.log
 RET=$?
 
-cp -t ./ CMakeFiles/CMake{Output,Error}.log
+[[ "${RET}" == 0 ]] && { make -j4 &> compile.log; } || { popd  &> /dev/null; echo "cmake failure"; exit ${RET}; }
 
-[[ "${RET}" == 0 ]] && make -j4 || { popd  &> /dev/null ; echo "cmake failure"; exit ${RET}; }
+rm -rf ../bin/*  ## we are in BUILD
+[[ "${RET}" == 0 ]] && { make install &> install.log; } || { popd &> /dev/null;  echo "make failure"; exit ${RET}; }
 
-rm -rf ../bin  ## we are in bin
-[[ "${RET}" == 0 ]] && make install || { popd &> /dev/null ;  echo "make failure"; exit ${RET}; }
-popd &> /dev/null
-popd &> /dev/null
+popd &> /dev/null  # return to SCRIPT_DIR
+
+popd &> /dev/null  # return to original location
+
