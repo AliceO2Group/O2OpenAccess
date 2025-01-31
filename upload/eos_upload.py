@@ -52,7 +52,7 @@ PERIOD2TAG = { 'LHC10h': 'PbPb_2.76TeV', 'LHC10b': 'pp_2.76TeV', 'LHC10c': 'pp_2
 
 EOSALICE = '/eos/opendata/alice'  # base directory on eospublic
 UPLOAD = f'{EOSALICE}/upload'     # upload directory on eospublic
-EOS = 'root://eospublic.cern.ch'  # xrootd name of server
+EOS = 'root://eospublic.cern.ch/'  # xrootd name of server
 
 BASE = '/alice/data'  # root directory of data files
 

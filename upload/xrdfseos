@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+xrdfs root://eospublic.cern.ch/ ${@}
+
