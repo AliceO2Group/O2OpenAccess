@@ -11,6 +11,11 @@
 
 
 o2physics_add_dpl_workflow(flow1
-                  SOURCES flowAnalysis.cxx
+                  SOURCES flowAnalysis1.cxx
+                  PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore
+                  COMPONENT_NAME OpenData)
+
+o2physics_add_dpl_workflow(flow1w
+                  SOURCES flowAnalysis1w.cxx
                   PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore
                   COMPONENT_NAME OpenData)
