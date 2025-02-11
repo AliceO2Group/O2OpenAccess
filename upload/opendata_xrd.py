@@ -178,7 +178,7 @@ class MyCopyProgressHandler(xrd_client.utils.CopyProgressHandler):
         print(job_msg)
 
 
-def XrdCopy(job_list: list) -> list:
+def XrdCopy(job_list: list, force: bool = False) -> list:
     """XRootD copy command :: the actual XRootD copy process"""
     handler = MyCopyProgressHandler()
     process = xrd_client.CopyProcess()
@@ -187,7 +187,7 @@ def XrdCopy(job_list: list) -> list:
     for copy_job in job_list:
         # https://github.com/xrootd/xrootd/blob/master/bindings/python/libs/client/copyprocess.py#L74
         process.add_job(copy_job[0], copy_job[1],
-                        posc = True, mkdir = True, force = False,
+                        posc = True, mkdir = True, force = force,
                         retry = xrd_client.EnvGetInt('CpRetry'),
                         cptimeout = xrd_client.EnvGetInt('CPTimeout'),
                         xrateThreshold = xrd_client.EnvGetInt('XRateThreshold')

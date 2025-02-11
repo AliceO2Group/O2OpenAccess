@@ -161,11 +161,11 @@ FILE_INDEX = []  # List of json dicts of files
 for lfn_info in find_list:
     # create src,dst pair to be added to the list of uploads
     local_filepath = f'{LOCAL_BASE_DIR}{lfn_info["lfn"]}'
-    eos_name = lfn2eos_name(lfn_info['lfn'], True)
-    lfn_src_dst.append((local_filepath,eos_name))
+    eos_name2upload = lfn2eos_name(lfn_info['lfn'], True)  # this is the upload destination
+    lfn_src_dst.append((local_filepath,eos_name2upload))
 
     lfn_dict = {}
-    lfn_dict['uri'] = eos_name
+    lfn_dict['uri'] = lfn2eos_name(lfn_info['lfn'], False)  # this is the actual destination, where files will be
     lfn_dict['size'] = lfn_info['size']
     lfn_dict['filename'] = lfn_info['name']
     lfn_addler = adler32(local_filepath)
@@ -180,22 +180,16 @@ print(f'RUN_NAME: {RUN_NAME}')
 
 # Name of the index files
 INDEX_JSON = f'{RUN_NAME}_file_index.json'
-INDEX_TXT = f'{RUN_NAME}_file_index.txt'
 
 # Write out the JSON index file
 JSON_OUT = json.dumps(FILE_INDEX, indent = 4) + '\n'
 with open(INDEX_JSON, 'wb') as f: f.write(JSON_OUT.encode("utf-8"))
-
-# Write out the TXT index file
-uri_eos_list = '\n'.join([x['uri'] for x in FILE_INDEX]) + '\n'
-with open(INDEX_TXT, 'wb') as f: f.write(uri_eos_list.encode("utf-8"))
 
 ##################################
 # Upload AO2D files
 print('Copy files')
 result = XrdCopy(lfn_src_dst)
 print('Copy Files - END\n')
-
 
 print('Create EOS file indexes dir')
 EOS_INDEX_DIR = f'{EOSALICE}/upload/{YEAR}/{PERIOD}/{RUN}/file-indexes'
@@ -205,12 +199,9 @@ status, _ = myxrdfs.mkdir(EOS_INDEX_DIR, MkDirFlags.MAKEPATH)
 print(status.message)
 print('Create EOS file indexes dir - END\n')
 
-
 print('Copy indexes')
 indexes_list = []
 indexes_list.append((os.path.abspath(INDEX_JSON), f'{EOS}{EOS_INDEX_DIR}/{INDEX_JSON}'))
-indexes_list.append((os.path.abspath(INDEX_TXT),  f'{EOS}{EOS_INDEX_DIR}/{INDEX_TXT}'))
 result2 = XrdCopy(indexes_list)
 print('Copy indexes - END\n')
-
 
