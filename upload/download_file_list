@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+file_list="${1}"
+shift
+
+alien.py cp -T 64 -parent 99 -retry 3 ${@} -input "${file_list}"
+
