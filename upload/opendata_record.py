@@ -25,7 +25,7 @@ class fileindexRec(RecordClass):
     size: int = 0
 
 class metadataRec(RecordClass):
-    schema: str = "http://opendata.cern.ch/schema/records/record-v1.0.0.json"
+#    schema: str = "http://opendata.cern.ch/schema/records/record-v1.0.0.json"
 #    _bucket: str = ''
 #    _file_indices: list = []
     usage: dict = {
@@ -36,28 +36,25 @@ class metadataRec(RecordClass):
         ]
     }
 
+
 class runRec(RecordClass):
-    created: str = ''
-    updated: str = ''
-    date_created: list  = []
-    date_published: str = ''
-    id: str = ''
+    abstract: dict = { "description": "" }
     accelerator: str = "CERN-LHC"
     collaboration: dict = { "name": "ALICE Collaboration" }
     collections: list = [ "ALICE-Reconstructed-Data" ]
-    abstract: dict = { "description": "" }
     collision_information: dict = { "energy": "", "type": "" }
-    doi: str = ''
+    created: str = ''
+    date_created: list  = []
+    date_published: str = ''
+    distribution: dict = {}
     experiment: list = [ "ALICE" ]
     files: list = []
-    file: str = ''
     license: dict = { "attribution": "CC0" }
     publisher: str = "CERN Open Data Portal"
     recid: str = ''
     title: str = ''
     title_additional: str = ''
     type: dict = { "primary": "Dataset", "secondary": [ "Collision" ] }
-    links: dict = { "bucket": "", "self": "" }
-    distribution: dict = {}
-    metadata: dict = {}
+    updated: str = ''
+    usage: dict = {}
 

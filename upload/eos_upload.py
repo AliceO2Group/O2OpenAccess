@@ -4,7 +4,7 @@
 ###   STEERING VARIABLES
 
 DO_INDEX_JSON = True
-DO_UPLOAD_FILES = True
+DO_UPLOAD_FILES = False
 DO_MAKE_RECORD = True
 
 # RUN INFORMATION
@@ -112,7 +112,10 @@ for lfn_info in find_list:
 # Get number of collisions from files and assemble the collection name
 COLL_NR = get_coll_list([x[0] for x in lfn_src_dst])
 RUN_NAME = f'{PERIOD}_{RUN}_{PERIOD2TAG[PERIOD]}_{COLL_NR}'
-print(f'RUN_NAME: {RUN_NAME}')
+
+COLL_TYPE, _, ENERGY = PERIOD2TAG[PERIOD].partition("_")
+
+print(f'RUN_NAME: {RUN_NAME}\nCOLL_TYPE: {COLL_TYPE}\nENERGY: {ENERGY}')
 
 # Name of the index files
 INDEX_JSON = f'{RUN_NAME}_file_index.json'
@@ -170,28 +173,46 @@ if DO_MAKE_RECORD:
     # file_indices_dict = recordclass.asdict(file_indices)
 
     ##################################################
-    # file_metadata = metadataRec()
-    # file_metadata._file_indices = [ file_indices_dict ]
-    # file_metadata_dict = recordclass.asdict(file_metadata)
-    # file_metadata_dict['$schema'] = file_metadata_dict['schema']
-    # file_metadata_dict.pop('schema')
+    file_metadata = metadataRec()
+    file_metadata_dict = recordclass.asdict(file_metadata)
+
+    ##################################################
+    distribution_rec = distributionRec()
+    distribution_rec.number_events = COLL_NR
+    distribution_rec.number_files = sum_files
+    distribution_rec.size = sum_size
+    distribution_rec_dict = recordclass.asdict(distribution_rec)
+
+    ##################################################
+    ### Add file Dict for index file
+    f_idx_rec = {}
+    f_idx_rec['type'] = 'index.json'
+    f_idx_rec['uri'] = INDEX_JSON_EOS
+    f_idx_rec['size'] = os.stat(INDEX_JSON).st_size
+    f_idx_rec['checksum'] = f'adler32:{adler32(INDEX_JSON)}'
 
     ##################################################
     run_record = runRec()
     # run_record.metadata = file_metadata_dict
-    run_record.date_created = ['2010']
+    run_record.date_created = [ YEAR ]
     run_record.date_published = '2025'
-
+    run_record.title = RUN_NAME
     run_record.created = NOW
     run_record.updated = NOW
+    run_record.files.append(f_idx_rec)
+    run_record.usage = file_metadata_dict
+    run_record.distribution = distribution_rec_dict
+    run_record.collision_information = {'type': COLL_TYPE, 'energy': ENERGY}
 
-    run_record.file = INDEX_JSON_EOS
+    #run_record.file = INDEX_JSON_EOS
     record_dict = recordclass.asdict(run_record)
     ##################################################
 
+    record2write = [ record_dict ]
+
     # Write out the JSON index file
     record_file_name = INDEX_JSON.replace('_file_index.json','') + '_record.json'
-    record_out = json.dumps(record_dict, indent = 4) + '\n'
+    record_out = json.dumps(record2write, indent = 4) + '\n'
     with open(record_file_name, 'wb') as f: f.write(record_out.encode("utf-8"))
 
 
