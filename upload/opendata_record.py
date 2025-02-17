@@ -26,8 +26,8 @@ class fileindexRec(RecordClass):
 
 class metadataRec(RecordClass):
     schema: str = "http://opendata.cern.ch/schema/records/record-v1.0.0.json"
-    _bucket: str = ''
-    _file_indices: list = []
+#    _bucket: str = ''
+#    _file_indices: list = []
     usage: dict = {
       "description": "You can access and analyse these data through the ALICE Virtual Machine. Please follow the instructions for getting started and setting up the Virtual Machine:",
       "links": [
@@ -50,6 +50,7 @@ class runRec(RecordClass):
     doi: str = ''
     experiment: list = [ "ALICE" ]
     files: list = []
+    file: str = ''
     license: dict = { "attribution": "CC0" }
     publisher: str = "CERN Open Data Portal"
     recid: str = ''
