@@ -49,7 +49,7 @@ class runRec(RecordClass):
     distribution: dict = {}
     experiment: list = [ "ALICE" ]
     files: list = []
-    license: dict = { "attribution": "CC0" }
+    license: dict = { "attribution": "CC0-1.0" }
     publisher: str = "CERN Open Data Portal"
     recid: str = ''
     title: str = ''
