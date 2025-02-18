@@ -1,26 +1,6 @@
 #!/usr/bin/env python3
 
-###############################
-###   STEERING VARIABLES
-
-DO_INDEX_JSON = True
-DO_UPLOAD_FILES = False
-DO_MAKE_RECORD = True
-
-# RUN INFORMATION
-YEAR = '2010'
-PERIOD_LETTER = 'h'
-RUN_NR = '139510'  # Just run number without 000 prefix
-
-# Directory chain of the data; it will/can depend on analysis processing pass, type, other tags
-# it is the part of data path the uniquely specify the data files
-SPEC_DIR = '/pass3/PWGZZ/Run3_Conversion/522_20241231-1726'
-
-# LOCAL directory where data is already downloaded; it's a prefix for actual AliEn LFN
-LOCAL_BASE_DIR = '/data3'
-
-###############################
-
+import argparse
 import datetime
 import sys
 import os
@@ -31,7 +11,7 @@ import json
 import ROOT
 
 import recordclass
-from rich.pretty import pprint
+#from rich.pretty import pprint
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -44,12 +24,34 @@ try:
     from alienpy.wb_api import PrintDict, retf_print
     from alienpy.alien import *  # nosec PYL-W0614
 except Exception:
-    try:
-        from xjalienfs.wb_api import PrintDict, retf_print
-        from xjalienfs.alien import *  # nosec PYL-W0614
-    except Exception:
-        print("Can't load alienpy, exiting...")
-        sys.exit(1)
+    print("Can't load alienpy, exiting...")
+    sys.exit(1)
+
+
+##########################################################
+###   Parse arguments
+parser = argparse.ArgumentParser(description = 'ALICE OpenData tool for creation (and upload) of record json files')
+
+parser.add_argument('-idx', '--index',  required = False, action='store_false', help = 'Enable creation of file index json file; default = True', dest = 'DO_INDEX_JSON')
+parser.add_argument('-up',  '--upload', required = False, action='store_true', help = 'Enable upload of file index json file; default = False', dest = 'DO_UPLOAD_FILES')
+parser.add_argument('-rec', '--record', required = False, action='store_false', help = 'Enable creation of run record json file; default = True', dest = 'DO_MAKE_RECORD')
+parser.add_argument('-basedir', '--basedir', required = True, help = 'Specify directory where ALICE data is mirrored (full LFN path)', dest = 'LOCAL_BASE_DIR')
+parser.add_argument('-specdir', '--specdir', required = True, help = 'Specify directory components (after run path LFN - up to AO2D directories; e.g. : /pass3/PWGZZ/Run3_Conversion/522_20241231-1726)', dest = 'SPEC_DIR')
+parser.add_argument('runnr', help = 'Run number for which records are created')
+args, _ = parser.parse_known_args()
+
+RUN_NR = args.runnr
+
+DO_INDEX_JSON = args.DO_INDEX_JSON
+DO_UPLOAD_FILES = args.DO_UPLOAD_FILES
+DO_MAKE_RECORD = args.DO_MAKE_RECORD
+
+# Directory chain of the data; it will/can depend on analysis processing pass, type, other tags
+# it is the part of data path that uniquely specify the data files; e.g. /pass3/PWGZZ/Run3_Conversion/522_20241231-1726
+SPEC_DIR = args.SPEC_DIR
+
+# LOCAL directory where data is already downloaded; it's a prefix for actual AliEn LFN
+LOCAL_BASE_DIR = args.LOCAL_BASE_DIR
 
 ########################################
 ##   REQUIRED INITIAILZATION
@@ -61,9 +63,30 @@ wb = InitConnection(cmdlist_func = constructCmdList)  # type: ignore
 ########################################
 
 ### VARIABLES DEFINITIONS
+NOW = datetime.datetime.now().isoformat()
+
+runinfo_dict = getRunInfo(str(RUN_NR))
+if not runinfo_dict:
+    print(f'Could not get information about run: {RUN_NR}')
+
+YEAR = str(runinfo_dict["year"])
+PERIOD = runinfo_dict["period"]
+
+# Get beam type and try to normalize to something consistent and sane : <Part1>-<Part2>
+BEAM_TYPE = runinfo_dict["beamtype"].casefold()  # go to lowercase for easier conversions
+BEAM_TYPE = BEAM_TYPE.replace(' ','').replace('82','')
+BEAM_TYPE = BEAM_TYPE.replace('proton', 'p')
+BEAM_TYPE = BEAM_TYPE.replace('pbpb', 'pb-pb')
+BEAM_TYPE = BEAM_TYPE.replace('pp', 'p-p')
+BEAM_TYPE = BEAM_TYPE.replace('pb', 'Pb')  # return to capital P for Pb
+
+# Convert numeric enery to a nice looking string
+ENERGY = round((2 * runinfo_dict["energy"])/1000., 2)
+ENERGY_STR = f'{ENERGY}TeV'
+
+TAG = f'{BEAM_TYPE}_{ENERGY_STR}'
 
 RUN = f'000{RUN_NR}'
-PERIOD = f'LHC{YEAR[-2:]}{PERIOD_LETTER}'
 
 EOSALICE = '/eos/opendata/alice'  # base directory on eospublic
 
@@ -72,12 +95,6 @@ EOSALICE_UPLOAD = f'{EOSALICE}/upload'     # upload directory on eospublic
 EOS = 'root://eospublic.cern.ch/'  # xrootd name of server
 
 BASE = '/alice/data'  # root directory of data files
-
-NOW = datetime.datetime.now().isoformat()
-
-# Mapping of run tag string to period name
-PERIOD2TAG = { 'LHC10h': 'PbPb_2.76TeV', 'LHC10b': 'pp_2.76TeV', 'LHC10c': 'pp_2.76TeV', 'LHC10d': 'pp_2.76TeV', 'LHC10e': 'pp_2.76TeV',
-               'LHC13b': 'pPb_2.76TeV',  'LHC13c': 'pPb_2.76TeV' }
 
 FULL_RUN_DIR = f'{BASE}/{YEAR}/{PERIOD}/{RUN}{SPEC_DIR}'
 print(f'FULL_RUN_DIR: {FULL_RUN_DIR}')
@@ -111,11 +128,9 @@ for lfn_info in find_list:
 
 # Get number of collisions from files and assemble the collection name
 COLL_NR = get_coll_list([x[0] for x in lfn_src_dst])
-RUN_NAME = f'{PERIOD}_{RUN}_{PERIOD2TAG[PERIOD]}_{COLL_NR}'
+RUN_NAME = f'{PERIOD}_{RUN}_{TAG}_{COLL_NR}'
 
-COLL_TYPE, _, ENERGY = PERIOD2TAG[PERIOD].partition("_")
-
-print(f'RUN_NAME: {RUN_NAME}\nCOLL_TYPE: {COLL_TYPE}\nENERGY: {ENERGY}')
+print(f'RUN_NAME: {RUN_NAME}\nBEAM_TYPE: {BEAM_TYPE}\nENERGY: {ENERGY_STR}')
 
 # Name of the index files
 INDEX_JSON = f'{RUN_NAME}_file_index.json'
@@ -202,7 +217,13 @@ if DO_MAKE_RECORD:
     run_record.files.append(f_idx_rec)
     run_record.usage = file_metadata_dict
     run_record.distribution = distribution_rec_dict
-    run_record.collision_information = {'type': COLL_TYPE, 'energy': ENERGY}
+    run_record.collision_information = {'type': BEAM_TYPE, 'energy': ENERGY_STR}
+
+    # Create a nice description
+    BEAM_TYPE_NICE = BEAM_TYPE.replace('Pb', 'Lead').replace('p', 'Proton').replace('Xe', 'Xenon')
+    DESCRIPTION = f'{BEAM_TYPE_NICE} data sample at the collision energy of {ENERGY_STR} from run number {RUN_NR} of the {PERIOD} data taking period.'
+    run_record.abstract = {'description': DESCRIPTION }
+    run_record.title_additional = DESCRIPTION
 
     #run_record.file = INDEX_JSON_EOS
     record_dict = recordclass.asdict(run_record)

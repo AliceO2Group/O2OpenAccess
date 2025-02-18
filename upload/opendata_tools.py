@@ -1,5 +1,7 @@
-import zlib
 import os
+import requests
+import sys
+import zlib
 import ROOT
 from typing import Optional
 
@@ -81,4 +83,16 @@ def adler32(fname: str) -> int:
             START = zlib.adler32(chunk, START) if START else zlib.adler32(chunk)
     return f'{START:x}'
 
+
+def getRunInfo(runnr: str) -> dict:
+    '''Return run information from Monalisa special jsp'''
+    if not runnr: return {}
+    url = f'http://alimonitor.cern.ch/export/opendata.jsp?run={runnr}'
+    query_run = requests.get(url, timeout = 5)
+
+    if query_run.status_code != 200:
+        print(f'Invalid answer (code {query_run.status_code}) from query: {url}')
+        return {}
+
+    return query_run.json()
 
