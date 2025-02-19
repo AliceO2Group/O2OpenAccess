@@ -32,9 +32,9 @@ except Exception:
 ###   Parse arguments
 parser = argparse.ArgumentParser(description = 'ALICE OpenData tool for creation (and upload) of record json files')
 
-parser.add_argument('-noidx', '--noindex',  required = False, action='store_false', help = 'Disable creation of file index json file; default = True', dest = 'DO_INDEX_JSON')
+parser.add_argument('-noidx', '--noindex',  required = False, action='store_false', help = 'Disable creation of file index json file; default = False', dest = 'DO_INDEX_JSON')
 parser.add_argument('-up',  '--upload', required = False, action='store_true', help = 'Enable upload of file index json file; default = False', dest = 'DO_UPLOAD_FILES')
-parser.add_argument('-norec', '--norecord', required = False, action='store_false', help = 'Disable creation of run record json file; default = True', dest = 'DO_MAKE_RECORD')
+parser.add_argument('-norec', '--norecord', required = False, action='store_false', help = 'Disable creation of run record json file; default = False', dest = 'DO_MAKE_RECORD')
 parser.add_argument('-basedir', '--basedir', required = True, help = 'Specify directory where ALICE data is mirrored (full LFN path)', dest = 'LOCAL_BASE_DIR')
 parser.add_argument('-specdir', '--specdir', required = True, help = 'Specify directory components (after run path LFN - up to AO2D directories; e.g. : /pass3/PWGZZ/Run3_Conversion/522_20241231-1726)', dest = 'SPEC_DIR')
 parser.add_argument('runnr', help = 'Run number for which records are created')

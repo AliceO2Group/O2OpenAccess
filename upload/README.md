@@ -11,9 +11,9 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -noidx, --noindex     Disable creation of file index json file; default = True
+  -noidx, --noindex     Disable creation of file index json file; default = False
   -up, --upload         Enable upload of file index json file; default = False
-  -norec, --norecord    Disable creation of run record json file; default = True
+  -norec, --norecord    Disable creation of run record json file; default = False
   -basedir LOCAL_BASE_DIR, --basedir LOCAL_BASE_DIR
                         Specify directory where ALICE data is mirrored (full LFN path)
   -specdir SPEC_DIR, --specdir SPEC_DIR
