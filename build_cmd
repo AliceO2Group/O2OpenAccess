@@ -40,13 +40,13 @@ cmake -DCMAKE_INSTALL_PREFIX=.. -DBUILD_TEST_ROOT_MACROS=OFF ${CMAKE_DEBUG_OPTS}
     -DENABLE_CUDA=OFF -DENABLE_OPENCL1=OFF -DENABLE_OPENCL2=OFF -DENABLE_HIP=OFF \
     -DLIBJALIENO2_INCLUDE_DIR=${LIBJALIENO2_ROOT}/include -DLIBJALIENO2_LIBPATH=${LIBJALIENO2_ROOT}/lib/libjalienO2.so \
     -DJALIEN_ROOT_INCLUDE_DIR=${JALIEN_ROOT_ROOT}/include -DJAliEnRoot_LIB=${JALIEN_ROOT_ROOT}/lib/libJAliEnROOT.so \
-    .. &> cmake_out.log
+    .. 2>&1 | tee cmake_out.log
 RET=$?
 
-[[ "${RET}" == 0 ]] && { make -j4 &> compile.log; } || { popd  &> /dev/null; echo "cmake failure"; exit ${RET}; }
+[[ "${RET}" == 0 ]] && { make -j4 2>&1 | tee compile.log; } || { popd  &> /dev/null; echo "cmake failure"; exit ${RET}; }
 
 rm -rf ../bin/*  ## we are in BUILD
-[[ "${RET}" == 0 ]] && { make install &> install.log; } || { popd &> /dev/null;  echo "make failure"; exit ${RET}; }
+[[ "${RET}" == 0 ]] && { make install 2>&1 | tee install.log; } || { popd &> /dev/null;  echo "make failure"; exit ${RET}; }
 
 popd &> /dev/null  # return to SCRIPT_DIR
 
