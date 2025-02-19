@@ -64,6 +64,7 @@ wb = InitConnection(cmdlist_func = constructCmdList)  # type: ignore
 
 ### VARIABLES DEFINITIONS
 NOW = datetime.datetime.now().isoformat()
+NOW_YEAR = f'{datetime.datetime.now().year}'
 
 runinfo_dict = getRunInfo(str(RUN_NR))
 if not runinfo_dict:
@@ -210,8 +211,7 @@ if DO_MAKE_RECORD:
     run_record.date_created = [ YEAR ]
     run_record.date_published = '2025'
     run_record.title = RUN_NAME
-    run_record.created = NOW
-    run_record.updated = NOW
+    run_record.created = NOW_YEAR
     run_record.files.append(f_idx_rec)
     run_record.usage = file_metadata_dict
     run_record.distribution = distribution_rec_dict
@@ -219,8 +219,8 @@ if DO_MAKE_RECORD:
 
     # Create a nice description
     BEAM_TYPE_NICE = BEAM_TYPE.replace('Pb', 'Lead').replace('p', 'Proton').replace('Xe', 'Xenon')
-    BEAM_TYPE_NICE = BEAM_TYPE_NICE.replace('Proton', 'Proton-', 1).replace('Lead', 'Lead-', 1).replace('Xenon', 'Xenon-', 1)
-    DESCRIPTION = f'{BEAM_TYPE_NICE} data sample at the collision energy of {ENERGY_STR} from run number {RUN_NR} of the {PERIOD} data taking period.'
+    ## BEAM_TYPE_NICE = BEAM_TYPE_NICE.replace('Proton', 'Proton-', 1).replace('Lead', 'Lead-', 1).replace('Xenon', 'Xenon-', 1)
+    DESCRIPTION = f'{BEAM_TYPE} data sample at the collision energy of {ENERGY_STR} from run number {RUN_NR} of the {PERIOD} data taking period.'
     run_record.abstract = {'description': DESCRIPTION }
     run_record.title_additional = DESCRIPTION
 
@@ -232,6 +232,7 @@ if DO_MAKE_RECORD:
 
     # Write out the JSON index file
     record_file_name = INDEX_JSON.replace('_file_index.json','') + '_record.json'
+    record_file_name = f'alice-{record_file_name}'
     record_out = json.dumps(record2write, indent = 4) + '\n'
     with open(record_file_name, 'wb') as f: f.write(record_out.encode("utf-8"))
 

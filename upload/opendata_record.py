@@ -55,6 +55,6 @@ class runRec(RecordClass):
     title: str = ''
     title_additional: str = ''
     type: dict = { "primary": "Dataset", "secondary": [ "Collision" ] }
-    updated: str = ''
     usage: dict = {}
+    keywords: list = []
 
