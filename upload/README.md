@@ -2,7 +2,7 @@
 
 ```
 ./eos_upload.py -h
-usage: eos_upload.py [-h] [-idx] [-up] [-rec] -basedir LOCAL_BASE_DIR -specdir SPEC_DIR runnr
+usage: eos_upload.py [-h] [-noidx] [-up] [-norec] -basedir LOCAL_BASE_DIR -specdir SPEC_DIR runnr
 
 ALICE OpenData tool for creation (and upload) of record json files
 
@@ -11,9 +11,9 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -idx, --index         Enable creation of file index json file
-  -up, --upload         Enable upload of file index json file
-  -rec, --record        Enable creation of run record json file
+  -noidx, --noindex     Disable creation of file index json file; default = True
+  -up, --upload         Enable upload of file index json file; default = False
+  -norec, --norecord    Disable creation of run record json file; default = True
   -basedir LOCAL_BASE_DIR, --basedir LOCAL_BASE_DIR
                         Specify directory where ALICE data is mirrored (full LFN path)
   -specdir SPEC_DIR, --specdir SPEC_DIR

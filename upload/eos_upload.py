@@ -32,9 +32,9 @@ except Exception:
 ###   Parse arguments
 parser = argparse.ArgumentParser(description = 'ALICE OpenData tool for creation (and upload) of record json files')
 
-parser.add_argument('-idx', '--index',  required = False, action='store_false', help = 'Enable creation of file index json file; default = True', dest = 'DO_INDEX_JSON')
+parser.add_argument('-noidx', '--noindex',  required = False, action='store_false', help = 'Disable creation of file index json file; default = True', dest = 'DO_INDEX_JSON')
 parser.add_argument('-up',  '--upload', required = False, action='store_true', help = 'Enable upload of file index json file; default = False', dest = 'DO_UPLOAD_FILES')
-parser.add_argument('-rec', '--record', required = False, action='store_false', help = 'Enable creation of run record json file; default = True', dest = 'DO_MAKE_RECORD')
+parser.add_argument('-norec', '--norecord', required = False, action='store_false', help = 'Disable creation of run record json file; default = True', dest = 'DO_MAKE_RECORD')
 parser.add_argument('-basedir', '--basedir', required = True, help = 'Specify directory where ALICE data is mirrored (full LFN path)', dest = 'LOCAL_BASE_DIR')
 parser.add_argument('-specdir', '--specdir', required = True, help = 'Specify directory components (after run path LFN - up to AO2D directories; e.g. : /pass3/PWGZZ/Run3_Conversion/522_20241231-1726)', dest = 'SPEC_DIR')
 parser.add_argument('runnr', help = 'Run number for which records are created')
@@ -74,11 +74,9 @@ PERIOD = runinfo_dict["period"]
 
 # Get beam type and try to normalize to something consistent and sane : <Part1>-<Part2>
 BEAM_TYPE = runinfo_dict["beamtype"].casefold()  # go to lowercase for easier conversions
-BEAM_TYPE = BEAM_TYPE.replace(' ','').replace('82','')
+BEAM_TYPE = BEAM_TYPE.replace(' ','').replace('82','').replace('-','')  # as per 20250209 Tibor's email
 BEAM_TYPE = BEAM_TYPE.replace('proton', 'p')
-BEAM_TYPE = BEAM_TYPE.replace('pbpb', 'pb-pb')
-BEAM_TYPE = BEAM_TYPE.replace('pp', 'p-p')
-BEAM_TYPE = BEAM_TYPE.replace('pb', 'Pb')  # return to capital P for Pb
+BEAM_TYPE = BEAM_TYPE.replace('pb', 'Pb')
 
 # Convert numeric enery to a nice looking string
 ENERGY = round((2 * runinfo_dict["energy"])/1000., 2)
@@ -221,6 +219,7 @@ if DO_MAKE_RECORD:
 
     # Create a nice description
     BEAM_TYPE_NICE = BEAM_TYPE.replace('Pb', 'Lead').replace('p', 'Proton').replace('Xe', 'Xenon')
+    BEAM_TYPE_NICE = BEAM_TYPE_NICE.replace('Proton', 'Proton-', 1).replace('Lead', 'Lead-', 1).replace('Xenon', 'Xenon-', 1)
     DESCRIPTION = f'{BEAM_TYPE_NICE} data sample at the collision energy of {ENERGY_STR} from run number {RUN_NR} of the {PERIOD} data taking period.'
     run_record.abstract = {'description': DESCRIPTION }
     run_record.title_additional = DESCRIPTION
