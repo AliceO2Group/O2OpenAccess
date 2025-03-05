@@ -233,7 +233,7 @@ if DO_MAKE_RECORD:
     # Write out the JSON index file
     record_file_name = INDEX_JSON.replace('_file_index.json','') + '_record.json'
     record_file_name = f'alice-{record_file_name}'
-    record_out = json.dumps(record2write, indent = 4) + '\n'
+    record_out = json.dumps(record2write, indent = 2, sort_keys = True, ensure_ascii = False, separators=(",", ": ")) + '\n'
     with open(record_file_name, 'wb') as f: f.write(record_out.encode("utf-8"))
 
 
