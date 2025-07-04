@@ -2,6 +2,8 @@ BUILD/**
 INSTALL/**
 bin/**
 share/**
+upload/*.json
+upload/*.log
 
 # Prerequisites
 *.d

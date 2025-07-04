@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+import os
+import math
+import sys
+from opendata_tools import *
+
+RUN_NR = sys.argv[1]
+runinfo_dict = getRunInfo(str(RUN_NR))
+if not runinfo_dict['run']:
+    print("Invalid run number")
+    sys.exit(1)
+
+beam_type = runinfo_dict['beamtype'].casefold().replace(' ','').replace('82','').replace('-','').replace('proton', 'p')
+BEAM_E = float(runinfo_dict['energy'])
+
+beam_type = beam_type.lower()
+types_dict = { 'pb': {'z': 82, 'a': 208} , 'xe': {'z': 54, 'a': 129}, 'o': {'z': 8, 'a': 16}, 'p': {'z': 1, 'a': 1} }
+
+types_list = ['pb', 'xe', 'o', 'a', 'p']
+found_types = []
+while beam_type:
+    for b_type in types_list:
+        while b_type in beam_type:
+            beam_type = beam_type.replace(b_type, '', 1)
+            if b_type == 'a':
+                found_types.append('pb')
+            else:
+                found_types.append(b_type)
+
+if len(found_types) > 2:
+    print('more then 2 beam types found, this is programming error')
+    sys.exit(1)
+
+Z_1 = types_dict[found_types[0]]['z']
+A_1 = types_dict[found_types[0]]['a']
+Z_2 = types_dict[found_types[1]]['z']
+A_2 = types_dict[found_types[1]]['a']
+
+
+def compute_sqrts(beam_e, z1, a1, z2, a2):
+    z_mult = z1 * z2
+    a_mult = a1 * a2
+    return 2 * beam_e * math.sqrt(z_mult/a_mult)
+
+
+print(compute_sqrts(BEAM_E, Z_1, A_1, Z_2, A_2))
+
+

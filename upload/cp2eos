@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+klist -s || { echo "kerberos token invalid"; exit 1; }
+
+#export XrdSecPROTOCOL="krb,unix"
+
+SRC="${1}"
+shift
+DST="${1}"
+shift
+
+[[ -e "${SRC}" ]] || { echo "${SRC} not found"; exit 1; }
+
+export XRD_APPNAME="ALICE_OpenData"
+export XRD_TIMEOUTRESOLUTION="1"
+export XRD_CONNECTIONRETRY="5"
+export XRD_CONNECTIONWINDOW="20"
+export XRD_REQUESTTIMEOUT="1200"
+export XRD_STREAMTIMEOUT="90"
+export XRD_CPRETRY="3"
+
+xrdcp ${@} "${SRC}" "root://eospublic.cern.ch/${DST}"
+

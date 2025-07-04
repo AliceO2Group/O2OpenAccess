@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
 
-xrdfs root://eospublic.cern.ch/ ${@}
+klist -s || { echo "kerberos token invalid"; exit 1; }
+
+##export XrdSecPROTOCOL="krb,unix"
+
+xrdfs eospublic.cern.ch:1094 ${@}
 
