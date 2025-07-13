@@ -29,10 +29,10 @@ class metadataRec(RecordClass):
 #    _bucket: str = ''
 #    _file_indices: list = []
     usage: dict = {
-      "description": "You can access and analyse these data through the ALICE Virtual Machine. Please follow the instructions for getting started and setting up the Virtual Machine:",
+      "description": "Follow information from https://github.com/AliceO2Group/O2OpenAccess to access and analyse these data",
       "links": [
-            { "description": "Getting started with ALICE data", "url": "/getting-started/ALICE" },
-            { "description": "How to install the ALICE Virtual Machine", "url": "/VM/ALICE" }
+            { "description": "Getting started with ALICE data analysis", "url": "https://aliceo2group.github.io/analysis-framework/" },
+            { "description": "Use O2OpenAccess demonstrator", "url": "https://github.com/AliceO2Group/O2OpenAccess" }
         ]
     }
 
