@@ -1,0 +1,2 @@
+sed -i '/CVMFS_CONFIG_REPO_REQUIRED/s/=yes/=no/' *.conf
+

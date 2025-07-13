@@ -1,0 +1,22 @@
+Bootstrap: oci-archive
+From: el9cvmfs.tar
+
+%labels
+    Author Adrian.Sevcenco@spacescience.ro
+    Version 0.0.1
+    Description Minimal el9, HEP_OSlibs + cvmfs (configs: default+egi+osg) container
+
+
+%help
+Generic HEP oriented container (it includes HEP_OSlibs dependency list)
+that allows mounting of CVMFS repositories without any host requirement.
+The proxies are defined as generic PAC urls, with fallback to DIRECT.
+CVMFS configuration is the merge of cvmfs-config-default cvmfs-config-egi cvmfs-config-osg
+The default is either run(exec) the argument list or just start bash (login shell)
+
+%runscript
+#!/usr/bin/bash
+
+ARGS="${@}"
+[[ -n "${ARGS}" ]] && exec "${@}" || exec /usr/bin/bash -l
+

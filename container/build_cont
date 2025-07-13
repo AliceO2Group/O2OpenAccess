@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+DOCKER_CONT="el9cvmfs"
+
+./get_alien_ca
+
+podman build --no-cache --rm --format docker -t ${DOCKER_CONT}:latest -f ${DOCKER_CONT}.cont . || { echo "Failed to build docker image"; exit 1; }
+
+[[ -e ${DOCKER_CONT}.tar ]] && rm -rf ${DOCKER_CONT}.tar
+
+podman save --format oci-archive -o ${DOCKER_CONT}.tar localhost/${DOCKER_CONT} || { echo "Saving of container to local tar failed!"; exit 1; }
+
+apptainer build --fakeroot "${DOCKER_CONT}.sif" "${DOCKER_CONT}".sing || { echo "Singularity build failed!"; exit 1; }
+
+rm -rf master.zip alien-cas-master ${DOCKER_CONT}.tar
+

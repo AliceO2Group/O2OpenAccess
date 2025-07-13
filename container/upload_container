@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+DOCKER_CONT="el9cvmfs"
+
+oras login -u robot-asevcenc+asevcenc_push -p $(< ./registry_robot_asevcenc.token) registry.cern.ch || { echo "Fail to login to registry.cern.ch"; exit 1; }
+oras push registry.cern.ch/asevcenc/$(basename ${DOCKER_CONT} .sif):latest "${DOCKER_CONT}.sif:application/vnd.sylabs.sif.layer.v1.sif" && echo "Upload Done" || echo "Upload Fail"
+

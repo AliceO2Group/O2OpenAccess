@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+[[ -f master.zip ]] && rm -rf master.zip
+curl -OL https://github.com/alisw/alien-cas/archive/refs/heads/master.zip && \
+[[ -e alien-cas-master ]] && rm -rf alien-cas-master
+unzip master.zip "alien-cas-master/alien-ca/*" -d .
+
