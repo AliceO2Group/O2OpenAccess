@@ -52,41 +52,48 @@ struct flow_base {
   Configurable<int> nHarm{"nHarm", 2, "Number of harmonics"};
   Configurable<float> minPt{"minPt", 0.2, "Minimum pt"};
   Configurable<float> maxPt{"maxPt", 20.0, "Maximum pt"};
+    
+    Configurable<std::string> weightFile{"weightFile", "./histCenWght.root", "File with weights"};
+    Configurable<std::string> weightTHname{"weightTHname", "hCenWg", "Hist with weights"};
+    Configurable<std::string> weightPhiTHname{"weightPhiTHname", "hEtaPhiWeights", "Hist phi with weights"};
+    
+    
+    TFile* wTF = nullptr;
+    TH1D*  wH = nullptr;
 
-  Configurable<std::string> weightFile{"weightFile", "./histCenWght.root", "File with weights"};
-  Configurable<std::string> weightTHname{"weightTHname", "hCenWg", "Hist with weights"};
-  Configurable<std::string> weightPhiTHname{"weightPhiTHname", "hEtaPhiWeights", "Hist phi with weights"};
-
-  TFile* wTF = nullptr;
-  TH1D*  wH = nullptr;
-
-  std::vector<TH2D*> wPhiH;
+    std::vector<TH2D*> wPhiH;
+    
 
   TF1* fPhiCutLow = nullptr;
   TF1* fPhiCutHigh = nullptr;
+    
+    TF1* fMultCutLow = nullptr;
+    TF1* fMultCutHigh = nullptr;
+    TF1* fSPDCutPU = nullptr;
+    TF1* fV0CutPU = nullptr;
+    
 
   Service<o2::ccdb::BasicCCDBManager> ccdb;
-
     
   HistogramRegistry histos{"Histos", {}, OutputObjHandlingPolicy::AnalysisObject};
 
   Filter collisionFilter = (aod::collision::flags & (uint16_t)aod::collision::CollisionFlagsRun2::Run2VertexerTracks) == (uint16_t)aod::collision::CollisionFlagsRun2::Run2VertexerTracks;
   Filter trackFilter = ((requireGlobalTrackInFilter()) || (aod::track::isGlobalTrackSDD == (uint8_t) true));
 
-  void fillAPt(double trackpt, double cent, double vn, double sinHarm, double cosHarm, double wght)
+  void fillAPt(double trackpt, double cent, double vn, double sinHarm, double cosHarm)
   {
-      histos.fill(HIST("PtA"), cent, trackpt);
-    histos.fill(HIST("VnAPt"), trackpt, cent, vn, wght);
-    histos.fill(HIST("SinnAPt"), trackpt, cent, sinHarm, wght);
-    histos.fill(HIST("CosnAPt"), trackpt, cent, cosHarm, wght);
+    histos.fill(HIST("PtA"), cent, trackpt);
+    histos.fill(HIST("VnAPt"), trackpt, cent, vn);
+    histos.fill(HIST("SinnAPt"), trackpt, cent, sinHarm);
+    histos.fill(HIST("CosnAPt"), trackpt, cent, cosHarm);
   }
 
-  void fillCPt(double trackpt, double cent, double vn, double sinHarm, double cosHarm, double wght)
+  void fillCPt(double trackpt, double cent, double vn, double sinHarm, double cosHarm)
   {
-      histos.fill(HIST("PtC"), cent, trackpt);
-    histos.fill(HIST("VnCPt"), trackpt, cent, vn, wght);
-    histos.fill(HIST("SinnCPt"), trackpt, cent, sinHarm, wght);
-    histos.fill(HIST("CosnCPt"), trackpt, cent, cosHarm, wght);
+    histos.fill(HIST("PtC"), cent, trackpt);
+    histos.fill(HIST("VnCPt"), trackpt, cent, vn);
+    histos.fill(HIST("SinnCPt"), trackpt, cent, sinHarm);
+    histos.fill(HIST("CosnCPt"), trackpt, cent, cosHarm);
   }
 
 
@@ -111,8 +118,13 @@ struct flow_base {
     histos.add("vtx", "Vtx info (0=no, 1=yes); Vtx; Counts", kTH1I, {axisVtxcounts});
     histos.add("vtxCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", kTH1F, {axisZvert});
     histos.add("multvsCent", "centrality vs multiplicity", kTH2F, {axisCent, axisMult});
-    histos.add("SPclsvsSPDtrks", "SPD N_{tracklets} vs SPD N_{clusters}", kTH2I, {axisTracklets, axisClusters});
+    histos.add("SPDclsvsSPDtrks", "SPD N_{tracklets} vs SPD N_{clusters}", kTH2I, {axisTracklets, axisClusters});
     histos.add("multV0onvsMultV0of", "V0 offline vs V0 online", kTH2F, {axismultV0of, axismultV0on});
+      
+      histos.add("vtxCutsAft", "Vtx distribution (before cuts); Vtx z [cm]; Counts", kTH1F, {axisZvert});
+      histos.add("multvsCentAft", "centrality vs multiplicity", kTH2F, {axisCent, axisMult});
+      histos.add("SPDclsvsSPDtrksAft", "SPD N_{tracklets} vs SPD N_{clusters}", kTH2I, {axisTracklets, axisClusters});
+      histos.add("multV0onvsMultV0ofAft", "V0 offline vs V0 online", kTH2F, {axismultV0of, axismultV0on});
       histos.add("centAft", "centrality V0M", kTH1F, {axisCent});
       
     histos.add("res", "centrality percentile vs Resolution", kTProfile, {axisCentBins});
@@ -134,35 +146,47 @@ struct flow_base {
       histos.add("QAEtaPhiAft", "#eta #varphi (after cuts)", kTH3F, {{axisEta}, {axisPhi}, {axisCentBins}});
       histos.add("QAPhiWAft", "#varphi (after cuts)", kTH2F, {{axisCentBins}, {axisPhi}});
       
-      
-
-
 
     fPhiCutLow = new TF1("fPhiCutLow", "0.1/x/x+pi/18.0-0.025", 0, 100);
     fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
+      
+      
+      fMultCutLow = new TF1("fMultCutLow", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 5.5*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x)", 0, 100);
+      fMultCutLow->SetParameters(2449.78, -80.8401, 0.947422, -0.00394384, 97.7424, -2.19293, 0.0284328, -0.000307024, 1.52602e-06);
+      
+      fMultCutHigh = new TF1("fMultCutHigh", "[0]+[1]*x+[2]*x*x+[3]*x*x*x + 5.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x)", 0, 100);
+      fMultCutHigh->SetParameters(2449.78, -80.8401, 0.947422, -0.00394384, 97.7424, -2.19293, 0.0284328, -0.000307024, 1.52602e-06);
+      
+      fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 100000);
+      
+      fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+      fV0CutPU->SetParameters(33.4127, 0.95351, 0.0716651, 227.19, 8.78312, -0.000549686, 0.000275397, -6.68358e-07);
 
+      
     ccdb->setURL("http://alice-ccdb.cern.ch");
     ccdb->setCaching(true);
     ccdb->setLocalObjectValidityChecking();
 
     long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     ccdb->setCreatedNotAfter(now); // TODO must become global parameter from the train creation time
+      
+      
+      std::string weight_file_name = weightFile.value;
+      wTF = TFile::Open(weight_file_name.c_str(), "READ");
 
-    std::string weight_file_name = weightFile.value;
-    wTF = TFile::Open(weight_file_name.c_str(), "READ");
+      std::string weight_histogram_name = weightTHname.value;
+      std::string weightPhi_histogram_name = weightPhiTHname.value;
 
-    std::string weight_histogram_name = weightTHname.value;
-    std::string weightPhi_histogram_name = weightPhiTHname.value;
-
-    if (wTF){
-        wTF->GetObject(weight_histogram_name.c_str(), wH);
-        for (int i = 0; i < 9; i++) {
-            TH2D* temp_pointer = nullptr;
-            wTF->GetObject(Form("%s_%d", weightPhi_histogram_name.c_str(), i), temp_pointer);
-            wPhiH.push_back(temp_pointer);
-            }
-        }
-
+      if (wTF){
+          wTF->GetObject(weight_histogram_name.c_str(), wH);
+          for (int i = 0; i < 9; i++) {
+              TH2D* temp_pointer = nullptr;
+              wTF->GetObject(Form("%s_%d", weightPhi_histogram_name.c_str(), i), temp_pointer);
+              wPhiH.push_back(temp_pointer);
+          }
+      }
+      
+      
   }
 
   int getMagneticField(uint64_t timestamp)
@@ -260,10 +284,27 @@ struct flow_base {
       auto multV0aOn = bc.v0TriggerChargeA();
       auto multV0cOn = bc.v0TriggerChargeC();
       auto multV0On = multV0aOn + multV0cOn;
-            
+      
+        
       histos.fill(HIST("vtxCuts"), zvtx);
-      histos.fill(HIST("SPclsvsSPDtrks"), nITSTrkls, nITSCls);
+      histos.fill(HIST("SPDclsvsSPDtrks"), nITSTrkls, nITSCls);
       histos.fill(HIST("multV0onvsMultV0of"), multV0Tot, multV0On);
+
+      // Tracks are already filtered with GlobalTrack || GlobalTrackSDD
+      Int_t multTrk = tracks.size();
+      histos.fill(HIST("multvsCent"), v0Centr, multTrk);
+      
+      
+      if (multTrk < fMultCutLow->Eval(v0Centr)) {return;}
+      if (multTrk > fMultCutHigh->Eval(v0Centr)) {return;}
+      if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)) {return;}
+      if (multV0On < fV0CutPU->Eval(multV0Tot)) {return;}
+      
+      
+      histos.fill(HIST("vtxCutsAft"), zvtx);
+      histos.fill(HIST("multvsCentAft"), v0Centr, multTrk);
+      histos.fill(HIST("SPDclsvsSPDtrksAft"), nITSTrkls, nITSCls);
+      histos.fill(HIST("multV0onvsMultV0ofAft"), multV0Tot, multV0On);
       histos.fill(HIST("centAft"), v0Centr, v0CentrW);
       
       
@@ -273,8 +314,7 @@ struct flow_base {
       
       Int_t multGapA = 0, multGapC = 0;
       
-      // Tracks are already filtered with GlobalTrack || GlobalTrackSDD
-      Int_t multTrk = tracks.size();
+
       
       for (auto& track : tracks) {
           
@@ -288,6 +328,7 @@ struct flow_base {
               continue;
           
           Double_t phiW = wPhiH[cen]->GetBinContent(wPhiH[cen]->FindBin(tracketa, trackphi));
+          //Double_t phiW = 1.;
           
           Double_t sinHarm = phiW*TMath::Sin(nHarm * track.phi());
           Double_t cosHarm = phiW*TMath::Cos(nHarm * track.phi());
@@ -306,18 +347,15 @@ struct flow_base {
       }
       
       
-      histos.fill(HIST("multvsCent"), v0Centr, multTrk);
-      
-      
       if (multGapA > 0 && multGapC > 0) {
           Double_t resGap = (QxnGapA * QxnGapC + QynGapA * QynGapC) / (multGapA * multGapC);
-          histos.fill(HIST("res"), v0Centr, resGap, v0CentrW);
+          histos.fill(HIST("res"), v0Centr, resGap);
           
-          histos.fill(HIST("QxnA"), v0Centr, QxnGapA / multGapA, v0CentrW);
-          histos.fill(HIST("QxnC"), v0Centr, QxnGapC / multGapC, v0CentrW);
+          histos.fill(HIST("QxnA"), v0Centr, QxnGapA / multGapA);
+          histos.fill(HIST("QxnC"), v0Centr, QxnGapC / multGapC);
           
-          histos.fill(HIST("QynA"), v0Centr, QynGapA / multGapA, v0CentrW);
-          histos.fill(HIST("QynC"), v0Centr, QynGapC / multGapC, v0CentrW);
+          histos.fill(HIST("QynA"), v0Centr, QynGapA / multGapA);
+          histos.fill(HIST("QynC"), v0Centr, QynGapC / multGapC);
       }
       
       
@@ -365,6 +403,7 @@ struct flow_base {
           histos.fill(HIST("QAEtaPhiAft"), tracketa, trackphi, v0Centr);
           
           Double_t phiWn = wPhiH[cen]->GetBinContent(wPhiH[cen]->FindBin(tracketa, trackphi));
+          //Double_t phiWn = 1.;
           
           histos.fill(HIST("QAPhiWAft"), v0Centr, trackphi, phiWn);
           
@@ -376,12 +415,12 @@ struct flow_base {
           
           if (tracketa > etaGap && multGapA > 0) {
               Double_t vnC = harmGapA / multGapA;
-              fillCPt(trackpt, v0Centr, vnC, sinHarmn, cosHarmn, v0CentrW);
+              fillCPt(trackpt, v0Centr, vnC, sinHarmn, cosHarmn);
           }
           
           if (tracketa < -etaGap && multGapC > 0) {
               Double_t vnA = harmGapC / multGapC;
-              fillAPt(trackpt, v0Centr, vnA, sinHarmn, cosHarmn, v0CentrW);
+              fillAPt(trackpt, v0Centr, vnA, sinHarmn, cosHarmn);
           }
       }
   }
