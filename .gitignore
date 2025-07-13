@@ -1,9 +1,13 @@
+compilation_env.txt
 BUILD/**
 INSTALL/**
 bin/**
 share/**
 upload/*.json
 upload/*.log
+upload/ATTIC/
+upload/__pycache__/
+upload/opendata_record.example
 
 # Prerequisites
 *.d

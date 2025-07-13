@@ -4,7 +4,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) 
 
 # Load O2PHYSICS
 source ${SCRIPT_DIR}/enable
-env | sort > ${SCRIPT_DIR}/compilation_env.txt
+env > ${SCRIPT_DIR}/compilation_env.txt
 
 export CMAKE_DEBUG_OPTS=""
 
