@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 ###   DEFAULTS   ###
-export CVMFS_TAG="daily-20250905-0000-1"
+export LOCAL_TAG="latest-o2physics-o2"
 
 # Steering of the environment:
-# O2OPENACCESS_SW_TAG_CVMFS : set the string name for CVMFS installation
-export O2OPENACCESS_SW_TAG_CVMFS=${O2OPENACCESS_SW_TAG_CVMFS:-${CVMFS_TAG}}
+# O2OPENACCESS_SW_TAG_LOCAL : set the string name for local installation
+export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
 
 #####################################################
 [[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0})"; exit 1; }
@@ -23,9 +23,7 @@ local LIST_STR ITEM path_arr n
 LIST_STR="${1}"
 ITEM="${2}"
 IFS=':' read -ra path_arr <<< "${LIST_STR}"
-for (( n=0; n < ${#path_arr[*]}; n++)); do
-    [[ "$(realpath -q ${ITEM})" == "$(realpath -q ${path_arr[n]})" ]] && return 0;
-done
+for (( n=0; n < ${#path_arr[*]}; n++)); do [[ "$(realpath -q ${ITEM})" == "$(realpath -q ${path_arr[n]})" ]] && return 0; done
 return 1;
 }
 
@@ -42,21 +40,13 @@ __PATH_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${PATH}" "${1}" && re
 SourceIfValid ./.aliopendata_cfg  # apply local directory customization
 
 # construct location for etc/profile.d/init.sh
-stat "/cvmfs/alice.cern.ch/bin" &> /dev/null || { echo "CVMFS is not available!! check for presence of /cvmfs/alice.cern.ch/bin!"; return 1; }
-O2PHYS_TAG="${O2OPENACCESS_SW_TAG_CVMFS}"
-WORK_DIR="/cvmfs/alice.cern.ch"
+O2PHYS_TAG="${O2OPENACCESS_SW_TAG_LOCAL}"
+WORK_DIR="${ALIBUILD_WORK_DIR}"
 DISABLE_GPU=1
 
-# check the arch of package
-ALIBUILD_ARCH_PREFIX="el9-x86_64/Packages"
+ALIBUILD_ARCH_PREFIX="$(aliBuild architecture)"
 O2PHYS_DIR="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}"
-
-# it packages are not el9-x86_64/Packages let's try with el7-x86_64
-if [[ ! -d "${O2PHYS_DIR}" ]]; then
-    ALIBUILD_ARCH_PREFIX="el7-x86_64/Packages"
-    O2PHYS_DIR="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}"
-    [[ ! -d "${O2PHYS_DIR}" ]] && { echo "O2Physics was not found in ${O2PHYS_DIR}"; return 1; }
-fi
+[[ ! -d "${O2PHYS_DIR}" ]] && { echo "O2PHYS_DIR ${O2PHYS_DIR} not found!!"; return 1; }
 
 export WORK_DIR DISABLE_GPU O2PHYS_DIR
 

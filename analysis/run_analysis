@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+exec &> >(tee analysis.log)
+
+## If one have an full O2Physics environment saved as job.env, uncomment line below
+#[[ -f ./job.env ]] && source job.env || { echo "job.env not found"; exit 1; }
+
+# Or just load the O2OpenAccess environment (after building it)
+O2OPENACCESS_DIR="/software/alice/O2OpenAccess"
+source "${O2OPENACCESS_DIR}/enable"
+# check if basic command is present; exit if not
+hash o2-analysis-event-selection-service 2>/dev/null || { echo >&2 "O2 environment/commands not found"; exit 1; }
+
+# Export/set some steering variables
+export ALICEO2_CCDB_NOTOKENCHECK="1"
+
+# 8 GB; default = 0 (autodetect)
+SHM_SIZE="8589934592"
+# SHM_ARG=" --shm-segment-size ${SHM_SIZE} "
+# to disable, comment above and uncomment below
+SHM_ARG=""
+
+##############################
+#   ANALYSIS CONFIGURATION
+##############################
+# Input argument : if not set default list of files named file.list is used
+INPUT=${1:-@file.list}
+
+Tstart=$(date "+%s.%N")
+echo -e "Analysis start ${Tstart}"
+
+ARGS=" --configuration json://$(realpath config.json) --aod-file ${INPUT} ${SHM_ARG} "
+echo | \
+o2-analysis-event-selection-service     -b ${ARGS}     | \
+o2-analysis-lf-strangenessbuilder       -b ${ARGS}     | \
+o2-analysis-trackselection              -b ${ARGS}     | \
+o2-analysis-track-dca-cov-filler-run2   -b ${ARGS}     | \
+o2-analysis-multcenttable               -b ${ARGS}     | \
+o2-opendata-flow1                       -b ${ARGS} --run
+
+
+##o2-analysis-track-propagation           -b ${ARGS}     | \
+
+
+
+Tend=$(date "+%s.%N")
+timed=$(echo "$Tend-$Tstart" | bc -l)
+echo "Elapsed: ${timed} s"
+
