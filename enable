@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###   DEFAULTS   ###
-export CVMFS_TAG="daily-20250905-0000-1"
+export CVMFS_TAG="daily-20251023-0000-1"
 
 # Steering of the environment:
 # O2OPENACCESS_SW_TAG_CVMFS : set the string name for CVMFS installation

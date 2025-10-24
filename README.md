@@ -5,20 +5,31 @@ Repository for ALICE open access software
 https://aliceo2group.github.io/analysis-framework/  
 https://indico.cern.ch/event/1267433/timetable/#20230417.detailed  
 
+### Structure of repository
+
+* Root of repository have the enable/enable_local and build_cmd scripts used for  
+  loading O2Physics environment and build the example analysis from `src/` directory
+
+* `analysis/` directory contain the files required to run the exampla analysis
+
+* `cmake/` and `src/` contain the example analysis task
+
+* `container/` have the tools to build an cvmfs enabled EL9 container
+
+* `cvmfs/` have the tools to use a cvmfs enabled container
+
+* `upload/` have the tools to upload data to OpenData EOS storage
 
 ### Environment setup
 
 The environment (the package dependencies and the package path) is setup by running:  
-`source enable`  
+* For usage of cvmfs distributed O2Physics: `source enable`  
+* For usage of a local compiled O2Physics: `source enable_local`  
 
 There are a few of steering env vars:  
-O2OPENACCESS_USE_LOCAL : set to any value to use the user-defined local tag or the default one (see below)  
-
 O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed); It has a default of: latest-o2physics-o2  
 
-O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: nightly-20230423-1  
-
-The default behaviour is that O2OPENACCESS_USE_LOCAL is not set, and cvmfs dependency will be used  
+O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: daily-20251023-0000-1  
 
 
 ### Building
