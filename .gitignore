@@ -10,6 +10,7 @@ upload/ATTIC/
 upload/__pycache__/
 upload/opendata_record.example
 *.env
+*.root
 
 # Prerequisites
 *.d
