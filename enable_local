@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+##      N.B.!!! This script load/enable the environment variable only for O2Physics and it's dependencies !!!
+##      then it adds to PATH the location of the example analysis task found within this repository!
+
+[[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0} optional_tag_argument)"; exit 1; }
+SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
+
+TAG_ARG="${1}"
+shift
+
 ###   DEFAULTS   ###
 export LOCAL_TAG="latest-o2physics-o2"
 
@@ -7,10 +17,10 @@ export LOCAL_TAG="latest-o2physics-o2"
 # O2OPENACCESS_SW_TAG_LOCAL : set the string name for local installation
 export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
 
+# If argument is passed, overwrite any defaults or env variables
+[[ -n "${TAG_ARG}" ]] && O2OPENACCESS_SW_TAG_LOCAL="${TAG_ARG}"
+
 #####################################################
-[[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0})"; exit 1; }
-SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
-SCRIPT_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
 
 ## HELPERS
 SourceIfValid () { [[ -f "${1}" ]] && source "${1}"; }

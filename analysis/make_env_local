@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+hash alienv 2>/dev/null || { echo >&2 "alienv is not found! make sure aliBuild python package is installed"; exit 1; }
+
+[[ -z "${ALIBUILD_WORK_DIR}" ]] && { echo >&2 "ALIBUILD_WORK_DIR env var is not defined!!"; exit 1; }
+[[ -d "${ALIBUILD_WORK_DIR}" ]] || { echo >&2 "ALIBUILD_WORK_DIR is defined but not present!!"; exit 1; }
+
+PKG="${1}"
+shift
+[[ -z ${PKG} ]] &&  { echo >&2 "No package/packages specified"; exit 1; }
+
+export WORK_DIR="${ALIBUILD_WORK_DIR}" ALIBUILD_ARCH_PREFIX="$(aliBuild architecture)" DISABLE_GPU=1
+ENV_CMD="alienv printenv"
+
+PKG_HASH=$(echo "${PKG}" | python3 -c 'import sys; pkg_list = sys.stdin.read().strip().split(","); print(",".join(sorted(pkg_list)))' | sha256sum | cut -d " " -f1 ) #'
+ENV_FILE="${PKG_HASH}_local.env"
+
+## for local case we do not check if the file is already present as for the same tuple of package_name/tag there can be different locations (builds)
+## [[ ! -f "${ENV_FILE}" ]] && 
+
+# add to env file definition of ALIBUILD_WORK_DIR
+echo -ne "ALIBUILD_WORK_DIR=${ALIBUILD_WORK_DIR} ;export ALIBUILD_WORK_DIR;" > "${ENV_FILE}"
+
+${ENV_CMD} "${PKG}" 2>/dev/null >> "${ENV_FILE}"
+
+echo "$(realpath ${ENV_FILE})"
+

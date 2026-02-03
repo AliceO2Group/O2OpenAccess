@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+##      N.B.!!! This script load/enable the environment variable only for O2Physics and it's dependencies !!!
+##      then it adds to PATH the location of the example analysis task found within this repository!
+
+[[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0})"; exit 1; }
+SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
+
+TAG_ARG="${1}"
+shift
+
 ###   DEFAULTS   ###
 export CVMFS_TAG="daily-20260126-0000-1"
 
@@ -7,11 +17,10 @@ export CVMFS_TAG="daily-20260126-0000-1"
 # O2OPENACCESS_SW_TAG_CVMFS : set the string name for CVMFS installation
 export O2OPENACCESS_SW_TAG_CVMFS=${O2OPENACCESS_SW_TAG_CVMFS:-${CVMFS_TAG}}
 
-#####################################################
-[[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0})"; exit 1; }
-SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
-SCRIPT_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
+# If argument is passed, overwrite any defaults or env variables
+[[ -n "${TAG_ARG}" ]] && O2OPENACCESS_SW_TAG_CVMFS="${TAG_ARG}"
 
+#####################################################
 ## HELPERS
 SourceIfValid () { [[ -f "${1}" ]] && source "${1}"; }
 

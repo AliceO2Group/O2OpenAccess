@@ -1,4 +1,5 @@
 compilation_env.txt
+ATTIC/**
 BUILD/**
 INSTALL/**
 bin/**
@@ -8,6 +9,7 @@ upload/*.log
 upload/ATTIC/
 upload/__pycache__/
 upload/opendata_record.example
+*.env
 
 # Prerequisites
 *.d

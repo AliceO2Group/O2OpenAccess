@@ -10,7 +10,7 @@ https://indico.cern.ch/event/1267433/timetable/#20230417.detailed
 * Root of repository have the enable/enable_local and build_cmd scripts used for  
   loading O2Physics environment and build the example analysis from `src/` directory
 
-* `analysis/` directory contain the files required to run the exampla analysis
+* `analysis/` directory contain the files required to run an example analysis
 
 * `cmake/` and `src/` contain the example analysis task
 
@@ -23,18 +23,18 @@ https://indico.cern.ch/event/1267433/timetable/#20230417.detailed
 ### Environment setup
 
 The environment (the package dependencies and the package path) is setup by running:  
-* For usage of cvmfs distributed O2Physics: `source enable`  
-* For usage of a local compiled O2Physics: `source enable_local`  
+* For usage of cvmfs distributed O2Physics: `source enable <optional O2Physics tag>`  
+* For usage of a local compiled O2Physics: `source enable_local <optional O2Physics local build tag>`  
 
 There are a few of steering env vars:  
 O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed); It has a default of: latest-o2physics-o2  
 
-O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: daily-20251023-0000-1  
+O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: daily-20260126-0000-1  
 
 
 ### Building
 
-Use `./build_cmd` for task compilation
+Within the repository, use `./build_cmd` for task compilation
 It has the following flags:
 * `debug` - enable very verbose debug options for cmake
 
@@ -54,7 +54,7 @@ or for more comprehensive help
 
 ### Running in singularity container
 
-See the content of `cvmfs` directory
+See the content of `cvmfs` directory for a custom container or 
 * `./run_cvmfs_analysis` will load a cvmfs O2Physics version and run the analysis
 * `./cvmfs_cmd` will run the above script within the provided container with the help of `cvmfs2go` script
 

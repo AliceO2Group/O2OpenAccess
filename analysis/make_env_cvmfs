@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# check if alienv
+ls /cvmfs/alice.cern.ch/bin/alienv &>/dev/null || { echo >&2 "cvmfs/alienv is not found"; exit 1; }
+
+PKG="${1}"
+shift
+[[ -z ${PKG} ]] &&  { echo >&2 "No package/packages specified"; exit 1; }
+
+PKG_HASH=$(echo "${PKG}" | python3 -c 'import sys; pkg_list = sys.stdin.read().strip().split(","); print(",".join(sorted(pkg_list)))' | sha256sum | cut -d " " -f1 ) #'
+
+ENV_CMD="/cvmfs/alice.cern.ch/bin/alienv printenv"
+ENV_FILE="${PKG_HASH}_cvmfs.env"
+
+[[ ! -f "${ENV_FILE}" ]] && ${ENV_CMD} "${PKG}" 2>/dev/null > "${ENV_FILE}"
+
+echo "$(realpath ${ENV_FILE})"
+

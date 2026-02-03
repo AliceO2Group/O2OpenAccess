@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+
+# export this BEFORE importing XRootD modules
+os.environ['XrdSecPROTOCOL'] = 'unix'
+os.environ['XRD_APPNAME'] = 'ALICE OpenData tools; https://github.com/AliceO2Group/O2OpenAccess'
+
+from XRootD import client
+from XRootD.client.flags import *
+
+from rich.pretty import pprint
+
+## XrdSecPROTOCOL="unix" xrdfs eospublic.cern.ch:1094 ls -u -R /eos/opendata/alice/2015/LHC15o/000246994/*.root
+
+###   Parse arguments
+parser = argparse.ArgumentParser(description = 'ALICE OpenData tool for creation of list of root files from EOS OpenData server')
+parser.add_argument('runid', help = 'Path component (after /eos/opendata/alice) which is identyfing a given run location. e.g. 2015/LHC15o; in case of doubt, just examine contents of /eos/opendata/alice')
+args, _ = parser.parse_known_args()
+
+EOS_SRV='eospublic.cern.ch'
+EOS_PORT='1094'
+
+EOS_PUB_DIR = '/eos/opendata/alice'
+RUN_ID = args.runid
+
+EOS_DIR = f'{EOS_PUB_DIR}/{RUN_ID}'
+
+RUN_ID_FN = RUN_ID.replace('/','_')
+OUTPUT = f'{RUN_ID_FN}.list'
+
+# DirListFlags = enum(NONE = 0, STAT = 1, LOCATE = 2, RECURSIVE = 4, MERGE = 8, CHUNKED = 16, ZIP = 32)
+
+myclient = client.FileSystem(f'root://{EOS_SRV}')
+
+# check if path is valid
+status, path_check = myclient.stat(EOS_DIR)
+if status.error:
+    print(status.message)
+    sys.exit(2)
+
+
+def get_root_files(srvfs, eospath) -> list:
+    result = []
+    status, listing = myclient.dirlist(eospath, DirListFlags.RECURSIVE | DirListFlags.STAT)
+    for i in listing:
+        if not (i.statinfo.flags & StatInfoFlags.IS_DIR) and i.name.endswith('.root'):
+            result.append(f'root://{EOS_SRV}/{eospath}/{i.name}')
+    return result
+
+ROOT_FILES_LIST = []
+
+status, dirlist = myclient.dirlist(EOS_DIR, DirListFlags.STAT)
+for idx, i in enumerate(dirlist):
+    #if idx > 1: break
+    #pprint(i)
+    if i.statinfo.flags & StatInfoFlags.IS_DIR:
+        part_list = get_root_files(myclient, f'{EOS_DIR}/{i.name}')
+        if not part_list:
+            print(f'EMPTY PART LIST: {dirname}')
+            continue
+        ROOT_FILES_LIST.extend(part_list)
+
+
+msg = '\n'.join(ROOT_FILES_LIST)
+if os.path.exists(OUTPUT): os.remove(OUTPUT)
+with open(OUTPUT, 'a') as f: f.write(msg)
+

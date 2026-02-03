@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# This is a script intended to execute a given payload (run_analysis)
+# within the local environment (so not under a container).
+# The software to be used is either local or cvmfs based or, as in this case of this repository, mixed
+# and is to be set up/choosed by the run_analysis script
+
+NOW="$(date +%Y%m%d_%H%M%S)"
+
+# Base of workdir, defaults to pwd
+WORKDIR_BASE="."
+
+## Create workdir
+WORKDIR=$(mktemp -d --tmpdir="${WORKDIR_BASE}" ALICE_OD_WORKDIR_${NOW}_XXXXXX)
+WORKDIR_FULL_PATH=$(realpath ${WORKDIR})
+
+## Create tmp for container
+mkdir -p ${WORKDIR_FULL_PATH}/tmp
+
+# Copy payload to workdir
+cp ../enable ../enable_local run_analysis file.list config.json -t ${WORKDIR_FULL_PATH}/
+
+pushd "${WORKDIR_FULL_PATH}" &> /dev/null
+./run_analysis
+popd &> /dev/null
+

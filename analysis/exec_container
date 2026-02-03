@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+# This is a script intended to execute a given payload (run_analysis)
+# within an container. The default chosen container is an ALICE provided one, located on CVMFS
+# but it is possible to use any other location or a SIF file (apptainer native format for container)
+# the customisation is done by having withing the executing environrment the environment variable ALICE_OD_IMG
+# which shoudl point to a container (either SIF image or a sandbox location)
+
+NOW="$(date +%Y%m%d_%H%M%S)"
+
+CONTAINER_CMD="/cvmfs/alice.cern.ch/containers/bin/apptainer/x86_64/current/bin/apptainer"
+# If local available, comment above and uncomment below
+# CONTAINER_CMD="apptainer"
+
+# Container specification
+ALICE_CONTAINER_DIR="/cvmfs/alice.cern.ch/containers/fs/apptainer/x86_64/"
+ALICE_CONTAINER_NAME="alma9-alice-20251103"
+CONTAINER_IMAGE_DEFAULT="${ALICE_CONTAINER_DIR}${ALICE_CONTAINER_NAME}"
+
+# Use default container image (defined above) if no ALICE_OD_IMG env var was defined
+CONTAINER_IMAGE="${ALICE_OD_IMG:-$CONTAINER_IMAGE_DEFAULT}"
+
+[[ ! -e "${CONTAINER_IMAGE}" ]] && { echo "Container image not found!! -> ${CONTAINER_IMAGE}"; exit 1; }
+
+# Base of workdir, defaults to pwd
+WORKDIR_BASE="${CONT_EXEC:-.}"
+
+## Create workdir
+WORKDIR=$(mktemp -d --tmpdir="${WORKDIR_BASE}" ALICE_OD_WORKDIR_${NOW}_XXXXXX)
+WORKDIR_FULL_PATH=$(realpath ${WORKDIR})
+
+## Create tmp for container
+mkdir -p ${WORKDIR_FULL_PATH}/tmp
+
+# Copy payload to workdir
+##
+##      MAKE SURE TO HAVE ALL NEEDED FILES WITHING WORKING DIRECTORY !!!
+##
+cp run_analysis file.list ../enable ../enable_local config.json -t ${WORKDIR_FULL_PATH}/
+
+##
+##      N.B.!!! to use a local compiled ALICE software withing a container
+##      one need to mount the coresponding location ( $ALICE_$ALIBUILD_WORK_DIR/..  ) within the container
+##      add to below apptainer invocation the setup of env variable: --env ALICE_$ALIBUILD_WORK_DIR=location_in_container_of_this_location
+##      and if alienv is intended to be used make sure the container have an working aliBuild package.
+##
+
+##
+##      N.B.!!! given the container separation of environment, the environment setup (to use ALICE software)
+##      needs to take place withing the analysis script!!!
+##
+
+## Additional options to be passed to exec, see apptainer exec -h
+# APPTAINER_OPTS=""
+# interesting options:
+# --env stringToString            pass environment variable to contained process (default [])
+# --env-file strings              pass environment variables from file to contained process
+# --cpu-shares int                CPU shares for container (default -1)
+# --cpus string                   Number of CPUs available to container
+# --cpuset-cpus string            List of host CPUs available to container
+# --cpuset-mems string            List of host memory nodes available to container
+# --memory string                 Memory limit in bytes
+# --memory-reservation string     Memory soft limit in bytes
+# --memory-swap string            Swap limit, use -1 for unlimited swap
+# --mount stringArray             a mount specification e.g. 'type=bind,source=/opt,destination=/hostopt'.
+
+${CONTAINER_CMD} exec --containall ${APPTAINER_OPTS} \
+--cleanenv \
+--compat \
+--pwd /workdir \
+--bind /cvmfs:/cvmfs,${WORKDIR_FULL_PATH}:/workdir,${WORKDIR_FULL_PATH}/tmp:/tmp \
+${CONTAINER_IMAGE} \
+./run_analysis
+

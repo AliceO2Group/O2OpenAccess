@@ -1,23 +1,54 @@
 #!/usr/bin/env bash
 exec &> >(tee analysis.log)
 
-## If one have an full O2Physics environment saved as job.env, uncomment line below
-#[[ -f ./job.env ]] && source job.env || { echo "job.env not found"; exit 1; }
+## Set command for preparing environment
+# If there is an environment saved as job.env
+# The environment can be saved to a file by commands like:
+# for a local environment: alienv printenv O2Physics/latest-o2physics-o2 > job.env
+# for a cvmfs environment: /cvmfs/alice.cern.ch/bin/alienv printenv O2Physics::daily-20260128-0000-1  > job.env
+# see also the commands make_env_cvmfs and make_env_local
+# ENV_CMD="source job.env"
+#
+# the above scripts can be used like:
+# ENV_FILE=$(make_env_cvmfs O2Physics/daily-20260128-0000-1)
+# ENV_CMD="source ${ENV_FILE}"
 
-# Or just load the O2OpenAccess environment (after building it)
-O2OPENACCESS_DIR="/software/alice/O2OpenAccess"
-source "${O2OPENACCESS_DIR}/enable"
+# command formant: alienv printenv _PACKAGE_ID_
+# Using directly alienv with an package id
+# ENV_CMD="eval $(alienv printenv O2Physics/latest)"
+
+# Using directly cvmfs alienv with an package id
+ENV_CMD="eval $(/cvmfs/alice.cern.ch/bin/alienv printenv O2Physics/daily-20251208-0000-1)"
+
+# Using this repository "enable_local" for usage of repository analysis task with/together with local ALICE software
+# ENV_CMD="source enable_local latest"
+
+# Using this repository "enable" for usage of repository analysis task with/together with cvmfs located ALICE software
+# ENV_CMD="source enable daily-20260128-0000-1"
+
+# SETUP ENVIRONMENT
+${ENV_CMD}
+
 # check if basic command is present; exit if not
 hash o2-analysis-event-selection-service 2>/dev/null || { echo >&2 "O2 environment/commands not found"; exit 1; }
 
 # Export/set some steering variables
+
+## Do not check ALICE AliEn token
 export ALICEO2_CCDB_NOTOKENCHECK="1"
+
+## Disable all authentications methods as we are using OpenData server
+export XrdSecPROTOCOL="unix"
 
 # 8 GB; default = 0 (autodetect)
 SHM_SIZE="8589934592"
+
 # SHM_ARG=" --shm-segment-size ${SHM_SIZE} "
 # to disable, comment above and uncomment below
 SHM_ARG=""
+
+# Set json config for analysis. N.B. !!! Take care to properly customize the json if needed, it will effect the whole analysis
+JSON=$(realpath config.json)
 
 ##############################
 #   ANALYSIS CONFIGURATION
@@ -25,22 +56,17 @@ SHM_ARG=""
 # Input argument : if not set default list of files named file.list is used
 INPUT=${1:-@file.list}
 
+# List of arguments to be passed to the whole analysis chain. N.B.!!! IT NEEDS TO BE THE SAME TO ALL ELEMENTS!!!
+ARGS=" --configuration json://${JSON} --aod-file ${INPUT} ${SHM_ARG} "
+
+# Start the actual analysis. N.B.!!! Depending of the data to be analysised the chain of analysis taks my need additions or removals!!!
 Tstart=$(date "+%s.%N")
 echo -e "Analysis start ${Tstart}"
-
-ARGS=" --configuration json://$(realpath config.json) --aod-file ${INPUT} ${SHM_ARG} "
 echo | \
-o2-analysis-event-selection-service     -b ${ARGS}     | \
-o2-analysis-lf-strangenessbuilder       -b ${ARGS}     | \
-o2-analysis-trackselection              -b ${ARGS}     | \
-o2-analysis-track-dca-cov-filler-run2   -b ${ARGS}     | \
-o2-analysis-multcenttable               -b ${ARGS}     | \
-o2-opendata-flow1                       -b ${ARGS} --run
-
-
-##o2-analysis-track-propagation           -b ${ARGS}     | \
-
-
+o2-analysis-event-selection-service-run2    -b ${ARGS}     | \
+o2-analysis-trackselection                  -b ${ARGS}     | \
+o2-analysis-track-dca-cov-filler-run2       -b ${ARGS}     | \
+o2-analysistutorial-histograms              -b ${ARGS}  --run
 
 Tend=$(date "+%s.%N")
 timed=$(echo "$Tend-$Tstart" | bc -l)

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Create a local apptainer sif image from a cvmfs based sandbox
+
+ALICE_IMG_DIR="/cvmfs/alice.cern.ch/containers/fs/apptainer"
+ALICE_IMG_NAME="x86_64/alma9-alice-20250311"
+
+# to list available images just look at 
+# ls -1l /cvmfs/alice.cern.ch/containers/fs/apptainer
+
+# sudo apptainer build --fakeroot --fix-perms "${ALICE_IMG_NAME}" "${ALICE_IMG_DIR}/${ALICE_IMG_NAME}"
+sudo apptainer build "${ALICE_IMG_NAME}" "${ALICE_IMG_DIR}/${ALICE_IMG_NAME}"
+

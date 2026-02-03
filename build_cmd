@@ -2,17 +2,19 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) #"
 
-# Load O2PHYSICS
-source ${SCRIPT_DIR}/enable
-env > ${SCRIPT_DIR}/compilation_env.txt
-
 export CMAKE_DEBUG_OPTS=""
+
+ENABLE_CMD="enable"
 
 ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
     debug)
       export CMAKE_DEBUG_OPTS=" --debug-output --debug-find --trace --trace-expand --trace-format=human --trace-redirect=cmake_trace.log "
+      shift
+      ;;
+    local)
+      ENABLE_CMD="enable_local"
       shift
       ;;
     -h|--help)
@@ -28,7 +30,14 @@ done
 
 set -- "${ARGS[@]}" # restore positional parameters
 
+O2PHYS_TAG="${1}"
+shift
+
+# Load O2PHYSICS
+source ${SCRIPT_DIR}/${ENABLE_CMD} "${O2PHYS_TAG}"
+
 pushd ${SCRIPT_DIR} &> /dev/null
+env > ${SCRIPT_DIR}/compilation_env.txt
 
 # Compile the tasks
 mkdir -p BUILD
@@ -49,6 +58,5 @@ rm -rf ../bin/*  ## we are in BUILD
 [[ "${RET}" == 0 ]] && { make install 2>&1 | tee install.log; } || { popd &> /dev/null;  echo "make failure"; exit ${RET}; }
 
 popd &> /dev/null  # return to SCRIPT_DIR
-
 popd &> /dev/null  # return to original location
 
