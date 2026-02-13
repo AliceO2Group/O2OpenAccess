@@ -30,17 +30,18 @@ https://indico.cern.ch/event/1267433/timetable/#20230417.detailed
 * `upload/` have the tools to upload data to OpenData EOS storage
 
 
-### Environment setup
+### Environment setup/loading
 
-The environment (the package dependencies and the package path) is setup by running:  
-
-* For usage of cvmfs distributed O2Physics: `source enable <optional O2Physics tag>`  
-* For usage of a local compiled O2Physics: `source enable_local <optional O2Physics local build tag>`  
+`enable`/`enable_local` are to be sourced to load the O2Physics environment in *current shell* (N.B.!!!)
+* take as a 1st argument a tag name of O2Physics installation
+  * For usage of cvmfs distributed O2Physics: `source enable <optional O2Physics tag>`  
+  * For usage of a local compiled O2Physics: `source enable_local <optional O2Physics local build tag>`  
 
 There are a few of steering env vars:  
-O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed); It has a default of: latest-o2physics-o2  
-
-O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based); It has a default of: daily-20260126-0000-1  
+O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed)
+* It has a default of: latest-o2physics-o2  
+O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based)
+* It has a default of: daily-20260126-0000-1  
 
 ### Building
 
@@ -48,8 +49,10 @@ Within the repository, use `./build_cmd` for task compilation
 It has the following flags:
 
 * `debug` : enable very verbose debug options for cmake
-* `enable`/`enable_local` take as a 1st argument a tag name of O2Physics installation
-* `build_cmd` take as argument `[local] tag_name` where `local` specify that the tag_name is of a local O2Physics installation and as such `enable_local` script will be used
+* `build_cmd` take as argument `[local] tag_name`
+  *  use `local` to specify that the tag_name is of a local O2Physics installation and as such `enable_local` script will be used
+
+**N.B. For local O2Physics there is a need of `clang` package install !!!**
 
 ### Running
 
