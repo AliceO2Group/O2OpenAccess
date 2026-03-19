@@ -5,7 +5,7 @@ Repository for ALICE open access software
 ## ALICE software documentation
 
 https://aliceo2group.github.io/analysis-framework/  
-https://indico.cern.ch/event/1267433/timetable/#20230417.detailed  
+https://indico.cern.ch/event/1574136/timetable/  
 
 ### Structure of repository
 
