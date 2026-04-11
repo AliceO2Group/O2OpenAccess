@@ -46,9 +46,13 @@ https://indico.cern.ch/event/1574136/timetable/
 
 There are a few of steering env vars:  
 * O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed)  
-  * It has a default of: latest-o2physics-o2  
+  * It has a default of: `latest-o2physics-o2`  
 * O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based)  
-  * It has a default of: daily-20260126-0000-1  
+  * It has a default of: `daily-20260126-0000-1`  
+
+Anothe way to specify the software tag to be used is to provide it as an argument like:
+* `./enable daily-20260126-0000-1`
+* `./enable_local latest-o2physics-o2`
 
 
 ### Building
