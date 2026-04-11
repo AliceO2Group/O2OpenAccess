@@ -9,7 +9,7 @@ https://indico.cern.ch/event/1574136/timetable/
 
 ### Structure of repository
 
-* Root of repository have the enable/enable_local and build_cmd scripts used for  
+* Root of repository have the `enable`, `enable_local` and `build_cmd` scripts used for  
   loading O2Physics environment and build the example analysis from `src/` directory
     * These are supposed to be used/run outside of any already loaded environment
     * enable/enable_local take as a 1st argument a tag name of O2Physics installation
@@ -27,9 +27,14 @@ https://indico.cern.ch/event/1574136/timetable/
     * taken from https://github.com/adriansev/cvmfs2go
     * see the [cvmfs/README.md](/cvmfs/README.md) for more information
 
-* `upload/` have the tools to upload data to OpenData EOS storage
+* `upload/` Is dedicated to ALICE OpenData operators for uploading data to OpenData EOS storage
     * see [Uploading data to CERN OpenData](/upload/README.md)
 
+
+### Requirements
+
+* Any Linux (x86_64 architecture) with container capabilities  
+* `apptainer` or `singularity` installed for usage of cvmfs2go + el9cvmfs container  
 
 
 ### Environment setup/loading
@@ -45,6 +50,7 @@ O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local i
 O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based)
 * It has a default of: daily-20260126-0000-1  
 
+
 ### Building
 
 Within the repository, use `./build_cmd` for task compilation
@@ -54,11 +60,13 @@ It has the following flags:
 * `build_cmd` take as argument `[local] tag_name`
   *  use `local` to specify that the tag_name is of a local O2Physics installation and as such `enable_local` script will be used
 
-**N.B. For local O2Physics there is a need of `clang` package install !!!**
+**N.B. `clang` is a requirement for building O2Physics software !!!**
 
-### Running
 
-Use the provided `./run_analysis` example to run analysis in an _already_ loaded environment
+### Running analysis
+
+See details in [analysis directory](/analysis/README.md)  
+Use the provided `./run_analysis` example to run analysis in an _already_ loaded environment  
 
 To find help on options use:
 `o2-analysistutorial-flow-analysis --help`
@@ -66,7 +74,8 @@ To find help on options use:
 or for more comprehensive help
 `o2-analysistutorial-flow-analysis --help full`
 
-### Running in singularity container
+For running analysis in singularity containen make use of `cvmfs2go` script from `cvmfs` directory. 
 
-See the content of `cvmfs` directory for a custom container and content of `analysis/README.md`
+If required, on the subject of CCDB objects caching see [CCDB caching information](/CCDB_caching.md)
+
 
