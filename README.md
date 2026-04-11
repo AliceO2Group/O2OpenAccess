@@ -10,13 +10,10 @@ https://indico.cern.ch/event/1574136/timetable/
 ### Structure of repository
 
 * Root of repository have the `enable`, `enable_local` and `build_cmd` scripts used for  
-  loading O2Physics environment and build the example analysis from `src/` directory
-    * These are supposed to be used/run outside of any already loaded environment
-    * enable/enable_local take as a 1st argument a tag name of O2Physics installation
-    * build_cmd take as argument `[local] tag_name` where `local` specify that the tag_name is of a local O2Physics installation and as such enable_local script will be used
+  loading O2Physics environment and build the example analysis from `src/` directory (see below)  
 
 * `cmake/` and `src/` contain the example analysis task
-    * the compilation of this stand-alone analysis task is done by build_cmd command   
+  * the compilation of this stand-alone analysis task is done by build_cmd command  
 
 * `analysis/` directory contain the files required to run an example analysis
     * see the [Analysis info](analysis/README.md)
@@ -24,11 +21,11 @@ https://indico.cern.ch/event/1574136/timetable/
 * See [Container info](/container/README.md) for information on the tools to build an cvmfs enabled EL9 container
 
 * `cvmfs/` have `cvmfs2go` script to be able to use cvmfs within a container (for hosts where cvmfs is not available)
-    * taken from https://github.com/adriansev/cvmfs2go
-    * see the [cvmfs/README.md](/cvmfs/README.md) for more information
+  * taken from https://github.com/adriansev/cvmfs2go
+  * see the [cvmfs/README.md](/cvmfs/README.md) for more information
 
 * `upload/` Is dedicated to ALICE OpenData operators for uploading data to OpenData EOS storage
-    * see [Uploading data to CERN OpenData](/upload/README.md)
+  * see [Uploading data to CERN OpenData](/upload/README.md)
 
 
 ### Requirements
@@ -58,11 +55,11 @@ Anothe way to specify the software tag to be used is to provide it as an argumen
 ### Building
 
 Within the repository, use `./build_cmd` for task compilation
-It has the following flags:
+It has the following arguments:
 
 * `debug` : enable very verbose debug options for cmake
 * `build_cmd` take as argument `[local] tag_name`
-  *  use `local` to specify that the tag_name is of a local O2Physics installation and as such `enable_local` script will be used
+  * use `local` to specify that the tag_name is of a local O2Physics installation and as such `enable_local` script will be used
 
 **N.B. `clang` is a requirement for building O2Physics software !!!**
 
