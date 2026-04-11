@@ -284,9 +284,8 @@ if DO_MAKE_RECORD:
     run_record.date_created = [ YEAR ]
     run_record.date_published = '2025'
     run_record.title = RUN_NAME
-    run_record.created = NOW_YEAR
     run_record.files.append(f_idx_rec)
-    run_record.usage = file_metadata_dict
+    run_record.usage |= file_metadata_dict
     run_record.distribution = distribution_rec_dict
     run_record.collision_information = {'type': BEAM_TYPE_STR, 'energy': ENERGY_STR}
 
