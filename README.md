@@ -45,10 +45,10 @@ https://indico.cern.ch/event/1574136/timetable/
   * For usage of a local compiled O2Physics: `source enable_local <optional O2Physics local build tag>`  
 
 There are a few of steering env vars:  
-O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed)
-* It has a default of: latest-o2physics-o2  
-O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based)
-* It has a default of: daily-20260126-0000-1  
+* O2OPENACCESS_SW_TAG_LOCAL : tag name to be used for O2Physics dependency(local installed)  
+  * It has a default of: latest-o2physics-o2  
+* O2OPENACCESS_SW_TAG_CVMFS : tag name to be used for O2Physics dependency(cvmfs based)  
+  * It has a default of: daily-20260126-0000-1  
 
 
 ### Building
