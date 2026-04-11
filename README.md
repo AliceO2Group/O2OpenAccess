@@ -19,13 +19,13 @@ https://indico.cern.ch/event/1574136/timetable/
     * the compilation of this stand-alone analysis task is done by build_cmd command   
 
 * `analysis/` directory contain the files required to run an example analysis
-    * see the `analysis/README.md`
+    * see the [Analysis info](analysis/README.md)
 
-* `container/` have the tools to build an cvmfs enabled EL9 container
+* See [Container info](/container/README.md) for information on the tools to build an cvmfs enabled EL9 container
 
 * `cvmfs/` have `cvmfs2go` script to be able to use cvmfs within a container (for hosts where cvmfs is not available)
     * taken from https://github.com/adriansev/cvmfs2go
-    * see the `cvmfs/README.md` for more information
+    * see the [cvmfs/README.md](/cvmfs/README.md) for more information
 
 * `upload/` have the tools to upload data to OpenData EOS storage
     * see [Uploading data to CERN OpenData](/upload/README.md)
