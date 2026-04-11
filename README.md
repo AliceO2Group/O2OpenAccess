@@ -28,6 +28,8 @@ https://indico.cern.ch/event/1574136/timetable/
     * see the `cvmfs/README.md` for more information
 
 * `upload/` have the tools to upload data to OpenData EOS storage
+    * see [Uploading data to CERN OpenData](/upload/README.md)
+
 
 
 ### Environment setup/loading

@@ -65,5 +65,3 @@ and then have within the environment `export KRB5_CONFIG="path_to_krb5.conf"`
 Then, a kerberos token can be created with: `kinit -l '25:00' -r '120:00' -fp <CERN_USERNAME>@CERN.CH`
 `xrdcp` will automatically find and use the token (if no xrdgsiproxy is already created)   
 
-
-
