@@ -24,7 +24,7 @@ hash cvmfs2 2>/dev/null && DO_CONTAINER_CVMFS="" || DO_CONTAINER_CVMFS="1"
 [[ -n "${CVMFS2GO_CONTAINER_MOUNT}" ]] && DO_CONTAINER_CVMFS="1"
 
 help () {
-echo "Run CVMFS based software in Centos7 HEP oriented container (it includes HEP_OSlibs dependency list)
+echo "Run CVMFS based software in EL9 HEP oriented container (it includes HEP_OSlibs dependency list)
 This script will automatically mount the host configured CVMFS repositories and those specified by CVMFS_REPOSITORIES
 _OR_ will mount ONLY those specified by CVMFS_REPOSITORIES_EXCLUSIVE
 If the host lacks either cvmfs package or cvmfs default configs, repositories will be mounted inside the container
