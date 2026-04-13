@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import json
+import glob
+from rich.pretty import pprint
+
+merged = []
+
+OUTPUT = 'alice-2015-o.json'
+
+for filepath in glob.glob("alice-LHC15o_*_Pb-Pb_5.02TeV_*_record.json"):
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    if isinstance(data, list):
+        for rec in data:
+            ## Modify data if necessary
+            # pprint(rec)
+            merged.append(rec)
+    else:
+        print(f"WARNING: {filepath} did not contain a list at the top level . skipped.")
+
+with open(OUTPUT, "w") as f:
+    json.dump(merged, f, indent=2)
+
+print(f"Done. {len(merged)} records written to {OUTPUT}.")
+

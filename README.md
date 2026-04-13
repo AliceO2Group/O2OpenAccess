@@ -13,7 +13,7 @@ https://indico.cern.ch/event/1574136/timetable/
   loading O2Physics environment and build the example analysis from `src/` directory (see below)  
 
 * `cmake/` and `src/` contain the example analysis task
-  * the compilation of this stand-alone analysis task is done by build_cmd command  
+  * the compilation of this stand-alone analysis task is done by `build_cmd` command  
 
 * `analysis/` directory contain the files required to run an example analysis
     * see the [Analysis info](analysis/README.md)
