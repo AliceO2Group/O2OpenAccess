@@ -49,13 +49,13 @@ parser.add_argument('-noidx', '--noindex',  required = False, action='store_fals
 parser.add_argument('-skipcollnr', '--skipcollnr',  required = False, action='store_true', help = 'Skip computing of collision numbers; default = False', dest = 'DO_SKIPCOLLNR')
 parser.add_argument('-upjson', '--uploadjson', required = False, action='store_true', help = 'Enable upload of file index json file; default = False', dest = 'DO_UPLOAD_JSONFILES')
 parser.add_argument('-up',  '--upload', required = False, action='store_true', help = 'Enable upload of data files; default = False', dest = 'DO_UPLOAD_FILES')
-parser.add_argument('-norec', '--norecord', required = False, action='store_false', help = 'Disable creation of run record json file; default = False', dest = 'DO_MAKE_RECORD')
+parser.add_argument('-norec', '--norecord', required = False, action='store_false', help = 'Disable creation of run record json file; default = True', dest = 'DO_MAKE_RECORD')
 parser.add_argument('-basedir', '--basedir', required = True, help = 'Specify directory where ALICE data is mirrored (full LFN path)', dest = 'LOCAL_BASE_DIR')
 parser.add_argument('-specdir', '--specdir', required = True, help = 'Specify directory components (after run path LFN - up to AO2D directories; e.g. : /pass3/PWGZZ/Run3_Conversion/522_20241231-1726)', dest = 'SPEC_DIR')
 parser.add_argument('runnr', help = 'Run number for which records are created')
 args, _ = parser.parse_known_args()
 
-print(f'args: {args}')
+#print(f'args: {args}')
 
 RUN_NR = args.runnr
 
