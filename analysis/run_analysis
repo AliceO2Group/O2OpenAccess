@@ -13,12 +13,12 @@ exec &> >(tee analysis.log)
 # ENV_FILE=$(make_env_cvmfs O2Physics/daily-20260128-0000-1)
 # ENV_CMD="source ${ENV_FILE}"
 
-# command formant: alienv printenv _PACKAGE_ID_
-# Using directly alienv with an package id
+# command format: alienv printenv _PACKAGE_ID_
+# Using directly alienv with an package id for loading an local O2Physics installation
 # ENV_CMD="eval $(alienv printenv O2Physics/latest)"
 
-# Using directly cvmfs alienv with an package id
-ENV_CMD="eval $(/cvmfs/alice.cern.ch/bin/alienv printenv O2Physics/daily-20251208-0000-1)"
+# Using directly cvmfs alienv with an package id for loading an CVMFS based O2Physics installation
+# ENV_CMD="eval $(/cvmfs/alice.cern.ch/bin/alienv printenv O2Physics/daily-20251208-0000-1)"
 
 # Using this repository "enable_local" for usage of repository analysis task with/together with local ALICE software
 # ENV_CMD="source enable_local latest"
@@ -30,7 +30,11 @@ ENV_CMD="eval $(/cvmfs/alice.cern.ch/bin/alienv printenv O2Physics/daily-2025120
 ${ENV_CMD}
 
 # check if basic command is present; exit if not
-hash o2-analysis-event-selection-service 2>/dev/null || { echo >&2 "O2 environment/commands not found"; exit 1; }
+hash o2-analysis-event-selection-service 2>/dev/null || \
+{ echo >&2 "O2 environment/commands not found !!
+Make sure to enable/load an ALICE O2Physics environment before running this
+OR
+un-comment an ENV_CMD command to enable an O2Physics installation"; exit 1; }
 
 # Export/set some steering variables
 

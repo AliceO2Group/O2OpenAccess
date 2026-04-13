@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export XrdSecPROTOCOL="unix"
+xrdfs eospublic.cern.ch:1094 ${@}
+
