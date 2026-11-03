@@ -11,7 +11,7 @@ TAG_ARG="${1}"
 shift
 
 ###   DEFAULTS   ###
-export CVMFS_TAG="daily-20260126-0000-1"
+export CVMFS_TAG="daily-20261103-0000-1"
 
 # Steering of the environment:
 # O2OPENACCESS_SW_TAG_CVMFS : set the string name for CVMFS installation
