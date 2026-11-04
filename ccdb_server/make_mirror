@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+CCDB_DIR="/fastdata/ccdb_local"
+
+CCDB_LIST="${1}"
+shift
+[[ ! -f "${CCDB_LIST}" ]] && { echo "1st argument should be a file with a list of ccdb paths (1 per line)"; exit 1; }
+
+RUN_LIST="${1}"
+shift
+[[ ! -f "${RUN_LIST}" ]] && { echo "2nd argument should be a file with a list of runs (1 per line)"; exit 1; }
+
+# RCT/Info/RunInformation is always mirrored by ccdb_mirror.py (with the run number as validity)
+echo "Using CCDB paths file list: ${CCDB_LIST}"
+while read -r runnr ; do
+    echo "Run_nr:: ${runnr}"
+    ./ccdb_mirror.py -t "${CCDB_DIR}" -r "${runnr}" -i "${CCDB_LIST}"
+    echo
+    echo
+done < "${RUN_LIST}"

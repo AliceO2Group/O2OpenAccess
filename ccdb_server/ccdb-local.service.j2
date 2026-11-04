@@ -1,0 +1,40 @@
+[Unit]
+Description=CCDB local service
+Wants=network-online.target
+After=network.target network-online.target
+# Existence/type checks, done by systemd itself before the start job.
+# On failure the job fails and "systemctl status" names the failed Assert line.
+# (Not Condition*=: a failed condition silently skips the start, it is not an error.)
+AssertFileNotEmpty={{ ccdb_jar }}
+AssertPathIsDirectory={{ ccdb_repository }}
+
+[Service]
+Type=simple
+User={{ ccdb_user }}
+Group={{ ccdb_group }}
+SyslogIdentifier=ccdb-local
+WorkingDirectory=/tmp
+Restart=on-failure
+RestartSec=2
+
+# Location of repository to be serverd
+Environment=FILE_REPOSITORY_LOCATION={{ ccdb_repository }}
+
+# JAVA path
+Environment=CLASSPATH={{ ccdb_jar }}
+Environment=CCDB_LOCAL_SRV={{ ccdb_jar }}
+
+# Service listening endpoint
+Environment=TOMCAT_ADDRESS="{{ ccdb_address }}"
+Environment=TOMCAT_PORT={{ ccdb_port }}
+
+# Permission checks. ExecStartPre= runs with the User=/Group= above, so this
+# tests access as the service account (Assert*= runs as root and cannot).
+# "$$" is a literal "$" for the shell; the variables come from Environment=.
+ExecStartPre=/bin/sh -c 'test -r "$$CCDB_LOCAL_SRV" || { echo "$$CCDB_LOCAL_SRV is not readable by $$(id -un)" >&2; exit 1; }'
+ExecStartPre=/bin/sh -c 'test -w "$$FILE_REPOSITORY_LOCATION" -a -x "$$FILE_REPOSITORY_LOCATION" || { echo "$$FILE_REPOSITORY_LOCATION is not writable by $$(id -un)" >&2; exit 1; }'
+
+ExecStart=/usr/bin/java -Xms16m -Xmx32m -jar $CCDB_LOCAL_SRV
+
+[Install]
+WantedBy=multi-user.target

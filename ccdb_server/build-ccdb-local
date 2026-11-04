@@ -1,0 +1,218 @@
+#!/bin/bash
+# Build local.jar, memory.jar and sql.jar from
+# https://gitlab.cern.ch/grigoras/ccdb-local without using its package/*.sh
+# scripts, and copy them into the directory this script was invoked from.
+#
+# Only src/ and lib/ of the clone are used. The dependency versions, the
+# compile options and the packaging steps below reproduce upstream
+# package/{download-tomcat,compile,package}.sh at commit f035d8b (2026-10-30);
+# the resulting JARs contain the same entries.
+#
+# Differences from upstream on purpose:
+#   - every downloaded file is checked against the checksum its publisher
+#     provides, fetched at build time (see "dependencies" below)
+#   - everything happens in a temporary directory, removed on exit
+#   - any failing step aborts the build (set -euo pipefail)
+#   - javac --release 11 (checks against the Java 11 API) instead of
+#     -source/-target 11; the unused --add-exports jdk.internal.jvmstat is dropped
+#   - versioned copies (local-<version>.jar, ...) are not produced
+#
+# JDK selection: $JAVA_HOME, then javac on PATH, then /usr/lib/jvm/java-*-openjdk*;
+# the first OpenJDK >= MIN_JAVA_MAJOR with java, javac and jar is used.
+
+set -euo pipefail
+
+REPO_URL="https://gitlab.cern.ch/grigoras/ccdb-local.git"
+MIN_JAVA_MAJOR=21
+
+# ---- dependencies (upstream download-tomcat.sh) ---------------------------
+TOMCAT_VER="9.0.123"
+PG_VER="42.7.14"
+OUTDIR="$PWD"
+
+die()  { echo "ERROR: $*" >&2; exit 1; }
+warn() { echo "WARNING: $*" >&2; }
+
+# -f: HTTP errors are failures; --retry also covers HTTP 429 (Maven Central rate limiting)
+CURL=(curl -fsSL --retry 3 --retry-delay 2)
+
+# digest <sha1|sha512> <file>: GNU coreutils or macOS shasum
+digest() {
+    if command -v "${1}sum" >/dev/null; then "${1}sum" "$2" | cut -d' ' -f1
+    else shasum -a "${1#sha}" "$2" | cut -d' ' -f1; fi
+}
+
+# fetch <destination> <sha1|sha512> <checksum URL> <URL>...
+# Downloads the published checksum first, then tries each URL until one
+# downloads and matches it. Checksum files are "<hex>" or "<hex> [*]<name>";
+# only the first field is used, and it must be hex of the algorithm's length.
+fetch() {
+    local dest="$1" algo="$2" sum_url="$3" url expected actual len
+    shift 3
+    case "$algo" in sha1) len=40 ;; sha512) len=128 ;; *) die "unsupported algorithm $algo" ;; esac
+    expected=$("${CURL[@]}" "$sum_url" | awk 'NR == 1 { print tolower($1) }') \
+        || die "cannot download checksum $sum_url"
+    [[ "$expected" =~ ^[0-9a-f]{$len}$ ]] || die "no valid $algo checksum in $sum_url"
+    for url in "$@"; do
+        echo "Downloading $url"
+        "${CURL[@]}" "$url" -o "$dest" || { warn "download failed: $url"; continue; }
+        actual=$(digest "$algo" "$dest")
+        if [ "$actual" = "$expected" ]; then
+            echo "  $algo OK (checksum from $sum_url)"
+            return 0
+        fi
+        warn "$algo mismatch for $url (expected $expected, got $actual)"
+    done
+    rm -f "$dest"
+    die "could not obtain a verified copy of $(basename "$dest")"
+}
+
+# ---- JDK ------------------------------------------------------------------
+jdk_info() {
+    "$1/bin/java" -XshowSettings:properties -version 2>&1 | awk -F' = ' '
+        $1 ~ /^ *java\.specification\.version$/ { v = $2 }
+        $1 ~ /^ *java\.runtime\.name$/          { n = $2 }
+        END { print v "|" n }'
+}
+
+is_good_jdk() {
+    local home="$1" info ver name jcv
+    [ -x "$home/bin/java" ] && [ -x "$home/bin/javac" ] && [ -x "$home/bin/jar" ] || return 1
+    info=$(jdk_info "$home")
+    ver="${info%%|*}"
+    name="${info#*|}"
+    # Java <= 8 reports "1.x" here; the regex guard rejects it before -ge.
+    [[ "$ver" =~ ^[0-9]+$ ]] && [ "$ver" -ge "$MIN_JAVA_MAJOR" ] || return 1
+    [[ "$name" == OpenJDK* ]] || return 1
+    # javac must be from the same JDK release (mixed alternatives are common on EL)
+    jcv=$("$home/bin/javac" -version 2>&1 | awk '/^javac / { split($2, a, "."); print a[1] }')
+    [ "$jcv" = "$ver" ]
+}
+
+for cmd in git curl tar; do
+    command -v "$cmd" >/dev/null || die "'$cmd' not found in PATH"
+done
+
+JDK_HOME=""
+candidates=()
+[ -n "${JAVA_HOME:-}" ] && candidates+=("$JAVA_HOME")
+if command -v javac >/dev/null; then
+    candidates+=("$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")")
+fi
+for d in /usr/lib/jvm/java-*-openjdk*; do
+    [ -d "$d" ] && candidates+=("$d")
+done
+for c in "${candidates[@]}"; do
+    if is_good_jdk "$c"; then JDK_HOME="$c"; break; fi
+done
+[ -n "$JDK_HOME" ] || die "OpenJDK >= $MIN_JAVA_MAJOR JDK (java + javac + jar) not found.
+  Checked: ${candidates[*]:-<none>}
+  EL/Alma/Fedora: dnf install java-${MIN_JAVA_MAJOR}-openjdk-devel
+  Debian/Ubuntu : apt install openjdk-${MIN_JAVA_MAJOR}-jdk-headless
+  Or set JAVA_HOME to an OpenJDK >= $MIN_JAVA_MAJOR JDK."
+
+export JAVA_HOME="$JDK_HOME"
+export PATH="$JDK_HOME/bin:$PATH"
+echo "Using JDK: $JDK_HOME ($("$JDK_HOME/bin/javac" -version 2>&1 | grep '^javac'))"
+
+# ---- clone ----------------------------------------------------------------
+WORKDIR=$(mktemp -d -t ccdb-local-build.XXXXXX)
+trap 'rm -rf "$WORKDIR"' EXIT
+
+SRC="$WORKDIR/ccdb-local"
+DEPS="$WORKDIR/deps"
+CLASSES="$WORKDIR/classes"
+STAGE="$WORKDIR/stage"
+mkdir -p "$DEPS" "$CLASSES" "$STAGE"
+
+git clone --quiet --depth 1 "$REPO_URL" "$SRC"
+echo "Building commit $(git -C "$SRC" log -1 --format='%h %ci')"
+
+LIB="$SRC/lib"
+for j in alien.jar lazyj.jar FarmMonitor.jar apmon.jar javax.mail.jar javax.activation-1.2.0.jar; do
+    [ -f "$LIB/$j" ] || die "lib/$j missing in the repository"
+done
+compgen -G "$LIB/bc*-jdk18on-*.jar" >/dev/null || die "lib/bc*-jdk18on-*.jar missing in the repository"
+
+# ---- dependencies ---------------------------------------------------------
+# Checksums come from the publisher, at build time:
+#   Tomcat:     SHA-512 from archive.apache.org (ASF origin; keeps every
+#               release, unlike downloads/dlcdn which drop old ones)
+#   PostgreSQL: SHA-1 from Maven Central; jdbc.postgresql.org publishes no
+#               checksums and Maven Central has no SHA-256/512 for this artifact
+TOMCAT_PATH="tomcat/tomcat-9/v$TOMCAT_VER/bin/apache-tomcat-$TOMCAT_VER.tar.gz"
+fetch "$DEPS/tomcat.tar.gz" sha512 "https://archive.apache.org/dist/$TOMCAT_PATH.sha512" \
+    "https://dlcdn.apache.org/$TOMCAT_PATH" \
+    "https://archive.apache.org/dist/$TOMCAT_PATH"
+tar -xf "$DEPS/tomcat.tar.gz" -C "$DEPS"
+T="$DEPS/apache-tomcat-$TOMCAT_VER"
+
+PG_MAVEN="https://repo1.maven.org/maven2/org/postgresql/postgresql/$PG_VER/postgresql-$PG_VER.jar"
+fetch "$DEPS/postgresql.jar" sha1 "$PG_MAVEN.sha1" \
+    "https://jdbc.postgresql.org/download/postgresql-$PG_VER.jar" \
+    "$PG_MAVEN"
+
+# ---- compile (upstream compile.sh) ----------------------------------------
+CP=$(printf '%s:' "$T"/bin/*.jar "$T"/lib/*.jar "$LIB/lazyj.jar" "$LIB/alien.jar" "$LIB/javax.mail.jar" "$LIB/javax.activation-1.2.0.jar")
+find "$SRC/src" -name '*.java' > "$WORKDIR/sources.txt"
+javac --release 11 -classpath "$CP" -d "$CLASSES" @"$WORKDIR/sources.txt"
+
+# ---- package (upstream package.sh) ----------------------------------------
+cd "$STAGE"
+
+jar -xf "$LIB/alien.jar"
+
+shopt -s extglob
+rm -rf apmon com hep io javax lazyj lia META-INF org/!(json) src
+
+# the minimal set of JARs to start Tomcat and load the servlet
+for j in "$T/bin/tomcat-juli.jar" \
+         "$T"/lib/{catalina.jar,servlet-api.jar,tomcat-api.jar,tomcat-util.jar,tomcat-util-scan.jar,tomcat-coyote.jar,tomcat-jni.jar,annotations-api.jar,jaspic-api.jar} \
+         "$LIB"/{lazyj.jar,FarmMonitor.jar,apmon.jar,javax.mail.jar,javax.activation-1.2.0.jar}; do
+    jar -xf "$j"
+done
+
+# remove classes not needed by this project
+rm -rf src META-INF LICENSE NOTICE about.html ecj.1
+rm -rf org/apache/catalina/{manager,filters,ssi,users} org/apache/naming
+find org/apache/catalina/servlets -maxdepth 1 -name '*.class' ! -name '*DefaultServlet*' -delete
+find org/apache/catalina/valves   -maxdepth 1 -name '*.class' ! -name '*ValveBase*' ! -name '*ErrorReportValve*' -delete
+find org/apache/catalina/session  -maxdepth 1 -name '*.class' ! -name '*StandardManager*' ! -name '*ManagerBase*' ! -name '*TooManyActiveSessionsException*' -delete
+
+# keep the servlet DTD/XSD resources as empty files
+for a in javax/servlet/resources/*.dtd javax/servlet/resources/*.xsd; do
+    : > "$a"
+done
+
+cp -R "$CLASSES/ch" ch
+
+for j in "$LIB"/bc*-jdk18on-*.jar; do
+    jar -xf "$j"
+done
+
+jar -cfe local.jar \
+    ch.alice.o2.ccdb.webserver.LocalEmbeddedTomcat ch/alice/o2/ccdb/webserver/LocalEmbeddedTomcat.class \
+    ch javax org alien lazyj lia apmon utils com \
+    trusted_authorities.jks
+
+jar -cfe memory.jar \
+    ch.alice.o2.ccdb.webserver.MemoryEmbeddedTomcat ch/alice/o2/ccdb/webserver/MemoryEmbeddedTomcat.class \
+    ch javax org alien lazyj lia apmon utils com \
+    trusted_authorities.jks
+
+# extra classes for the SQL backend
+jar -xf "$DEPS/postgresql.jar"
+rm -rf src META-INF
+
+jar -cfe sql.jar \
+    ch.alice.o2.ccdb.webserver.SQLBackedTomcat ch/alice/o2/ccdb/webserver/SQLBackedTomcat.class \
+    ch javax org alien lazyj lia apmon utils com jline joptsimple \
+    config trusted_authorities.jks
+
+# Running sql.jar doubles as a smoke test of the packaged result.
+version=$(java -classpath sql.jar ch.alice.o2.ccdb.webserver.EmbeddedTomcat | sed -n 's/^CCDB version://p')
+[ -n "$version" ] || die "CCDB version cannot be determined, sql.jar is probably broken"
+
+cp -f -- local.jar memory.jar sql.jar "$OUTDIR"/
+echo "CCDB $version: copied local.jar memory.jar sql.jar to $OUTDIR"
+
