@@ -57,8 +57,33 @@ JSON=$(realpath config.json)
 ##############################
 #   ANALYSIS CONFIGURATION
 ##############################
+# Optional argument : --ccdburl URL ; if present all "ccdburl" and "ccdb-url" values of the json config are replaced
+CCDB_URL=""
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    case "${1}" in
+        --ccdburl)
+            [[ -z "${2:-}" ]] && { echo >&2 "--ccdburl requires an URL argument"; exit 1; }
+            CCDB_URL="${2}"
+            shift 2 ;;
+        *)
+            POSITIONAL+=("${1}")
+            shift ;;
+    esac
+done
+
+# Use a copy of the json config with the provided CCDB url (escaped like the json: / -> \/)
+if [[ -n "${CCDB_URL}" ]]; then
+    export ALICEO2_CCDB_HOST="${CCDB_URL}"
+
+#    URL_ESC="${CCDB_URL//\//\\/}"
+#    URL_ESC=$(printf '%s' "${URL_ESC}" | sed 's/[\\&|]/\\&/g') # escape for the sed replacement
+#    sed -E 's|("ccdb-?url"[[:space:]]*:[[:space:]]*")[^"]*"|\1'"${URL_ESC}"'"|' "${JSON}" > config_ccdb.json || exit 1
+#    JSON=$(realpath config_ccdb.json)
+fi
+
 # Input argument : if not set default list of files named file.list is used
-INPUT=${1:-@file.list}
+INPUT=${POSITIONAL[0]:-@file.list}
 
 # List of arguments to be passed to the whole analysis chain. N.B.!!! IT NEEDS TO BE THE SAME TO ALL ELEMENTS!!!
 ARGS=" --configuration json://${JSON} --aod-file ${INPUT} ${SHM_ARG} "
@@ -75,4 +100,3 @@ o2-analysistutorial-histograms              -b ${ARGS}  --run
 Tend=$(date "+%s.%N")
 timed=$(echo "$Tend-$Tstart" | bc -l)
 echo "Elapsed: ${timed} s"
-
