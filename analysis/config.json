@@ -3,6 +3,10 @@
     "internal-dpl-aod-reader": {
         "aod-file-private": "@file.list",
         "aod-max-io-rate": "0",
+        "aod-reader-backend": "root",
+        "aod-reader-threads": "1",
+        "aod-reader-prefetch": "1",
+        "aod-reader-local-io": "pread",
         "time-limit": "0",
         "orbit-offset-enumeration": "0",
         "orbit-multiplier-enumeration": "0",
@@ -17,13 +21,11 @@
         "timestamp": {
             "verbose": "false",
             "fatalOnInvalidTimestamp": "false",
-            "rct-path": "RCT\/Info\/RunInformation",
             "orbit-reset-path": "CTP\/Calib\/OrbitReset",
             "isRun2MC": "-1"
         },
         "bcselOpts": {
             "amIneeded": "-1",
-            "triggerBcShift": "0",
             "ITSROFrameStartBorderMargin": "-1",
             "ITSROFrameEndBorderMargin": "-1",
             "TimeFrameStartBorderMargin": "-1",
@@ -84,7 +86,7 @@
         "etaMin": "-0.800000012",
         "etaMax": "0.800000012"
     },
-    "internal-dpl-aod-writer": "",
     "internal-dpl-aod-global-analysis-file-sink": "",
+    "internal-dpl-aod-writer": "",
     "internal-dpl-injected-dummy-sink": ""
 }
