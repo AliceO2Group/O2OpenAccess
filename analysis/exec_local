@@ -21,6 +21,13 @@ mkdir -p ${WORKDIR_FULL_PATH}/tmp
 cp ../enable ../enable_local run_analysis file.list config.json -t ${WORKDIR_FULL_PATH}/
 
 pushd "${WORKDIR_FULL_PATH}" &> /dev/null
+
+# for usage of CVMFS based software
+source enable
+
+# for usage of local compiled software
+# source enable_local
+
 ./run_analysis
 popd &> /dev/null
 

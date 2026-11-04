@@ -11,3 +11,13 @@ Contents
 * file.list : list of files to be processed (an example with a single file)
 * make_env_cvmfs : create an environment file that prepare the environment for the usage of a given software stack version (cvmfs version)
 * make_env_local : create an environment file that prepare the environment for the usage of a given software stack version (local version)
+
+
+### Create file list of data files
+
+Use `eos_list_files` script to create a local file list, e.g.:
+```
+./eos_list_files 2015/LHC15o
+```
+
+this will create 2015_LHC15o.list
