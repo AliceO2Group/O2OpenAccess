@@ -47,9 +47,3 @@ and facilitate the following tasks:
      Lists all keys and stored types in a ROOT file (downloaded with tool `o2-ccdb-downloadccdbfile`) and prints a summary about the attached meta-information.
 
 
-## CCDB mirror
-
-`alien.py ccdb -mirror` enable possibility to mirror a given selection content on disk.
-The on-disk format respects CCDB reference and can be served by a java based http server: [ccdb-local](https://gitlab.cern.ch/grigoras/ccdb-local)
-After the server is started, the configured endpoint should be used as CCDB server name.
-

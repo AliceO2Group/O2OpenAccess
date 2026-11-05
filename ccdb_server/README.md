@@ -96,9 +96,27 @@ journalctl --user -u ccdb-local.service -f
 loginctl enable-linger "$USER"
 ```
 
-## 
+## Create a CCDB mirror repository
 
+For the purpose of having a local CCDB server with data mirrored from
+ALICE CCDB server there there are 2 requirements:
+1. a file list of CCDB paths (one per line) - to be extracted from an analysis log
+2. a file list of runs (the objects mirrored correspond to SOR/EOR dates of the runs)
 
+the extraction of paths is done with a command like:
+```
+./extract_ccdb_paths.py analysis.log > ccdb_paths.list
+```
 
+to obtain a list of runs (1 per line) (if not already at hand)
+one can use a filelist of input files and use `./extract_runs.sh` e.g.:
+```
+./extract_runs.sh LHC15o 2015_LHC15o.list > run_list_lhc15o
+```
+this will write a list of runs one per line
 
+To mirror the ccdb objects in the disk location of local CCDB server one must use:
+```
+./make_mirror ccdb_paths.list run_list_lhc15o /directory_of_CCDB_server_storage
+```
 
