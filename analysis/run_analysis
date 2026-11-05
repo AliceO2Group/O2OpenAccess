@@ -74,12 +74,10 @@ done
 
 # Use a copy of the json config with the provided CCDB url (escaped like the json: / -> \/)
 if [[ -n "${CCDB_URL}" ]]; then
-    export ALICEO2_CCDB_HOST="${CCDB_URL}"
-
-#    URL_ESC="${CCDB_URL//\//\\/}"
-#    URL_ESC=$(printf '%s' "${URL_ESC}" | sed 's/[\\&|]/\\&/g') # escape for the sed replacement
-#    sed -E 's|("ccdb-?url"[[:space:]]*:[[:space:]]*")[^"]*"|\1'"${URL_ESC}"'"|' "${JSON}" > config_ccdb.json || exit 1
-#    JSON=$(realpath config_ccdb.json)
+    URL_ESC="${CCDB_URL//\//\\/}"
+    URL_ESC=$(printf '%s' "${URL_ESC}" | sed 's/[\\&|]/\\&/g') # escape for the sed replacement
+    sed -E 's|("ccdb-?url"[[:space:]]*:[[:space:]]*")[^"]*"|\1'"${URL_ESC}"'"|' "${JSON}" > config_ccdb.json || exit 1
+    JSON=$(realpath config_ccdb.json)
 fi
 
 # Input argument : if not set default list of files named file.list is used
