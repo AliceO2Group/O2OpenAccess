@@ -4,21 +4,17 @@
 ##      then it adds to PATH the location of the example analysis task found within this repository!
 
 [[ "${BASH_SOURCE[0]}" -ef "${0}" ]] && { echo -e "This script should be sourced! use:\nsource $(realpath ${0} optional_tag_argument)"; exit 1; }
-SCRIPT_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
-SCRIPT_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
+ENABLE_PATH=$(realpath -e -P "${BASH_SOURCE[0]}")
+ENABLE_DIR=$(cd -P $(dirname -- "${SCRIPT_PATH}") >/dev/null 2>&1 && pwd)
 
 TAG_ARG="${1}"
 shift
 
-###   DEFAULTS   ###
-export LOCAL_TAG="latest-o2physics-o2"
-
 # Steering of the environment:
 # O2OPENACCESS_SW_TAG_LOCAL : set the string name for local installation
-export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-${LOCAL_TAG}}
-
 # If argument is passed, overwrite any defaults or env variables
-[[ -n "${TAG_ARG}" ]] && O2OPENACCESS_SW_TAG_LOCAL="${TAG_ARG}"
+[[ -n "${TAG_ARG}" ]] && export O2OPENACCESS_SW_TAG_LOCAL="${TAG_ARG}" || export O2OPENACCESS_SW_TAG_LOCAL=${O2OPENACCESS_SW_TAG_LOCAL:-latest-o2physics-o2}
+unset TAG_ARG
 
 #####################################################
 
@@ -44,18 +40,17 @@ __PATH_ADD () { [[ -z "${1}" ]] && return 1; ITEM_IN_PATH "${PATH}" "${1}" && re
 ######################################################################
 
 ## if O2PHYSICS present (environemnt already enabled then just add path and return(we are sourced))
-[[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/bin" ; return 0 ; }
+[[ -n "${O2PHYSICS_ROOT}" ]] && { __PATH_INS "${SCRIPT_DIR}/example_task/bin" ; return 0 ; }
 
 # apply local customizations
 SourceIfValid ./.aliopendata_cfg  # apply local directory customization
 
 # construct location for etc/profile.d/init.sh
-O2PHYS_TAG="${O2OPENACCESS_SW_TAG_LOCAL}"
 WORK_DIR="${ALIBUILD_WORK_DIR}"
 DISABLE_GPU=1
-
 ALIBUILD_ARCH_PREFIX="$(aliBuild architecture)"
-O2PHYS_DIR="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2PHYS_TAG}"
+
+O2PHYS_DIR="${WORK_DIR}/${ALIBUILD_ARCH_PREFIX}/O2Physics/${O2OPENACCESS_SW_TAG_LOCAL}"
 [[ ! -d "${O2PHYS_DIR}" ]] && { echo "O2PHYS_DIR ${O2PHYS_DIR} not found!!"; return 1; }
 
 export WORK_DIR DISABLE_GPU O2PHYS_DIR

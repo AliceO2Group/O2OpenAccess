@@ -11,6 +11,9 @@ upload/__pycache__/
 upload/opendata_record.example
 *.env
 *.root
+example_task/compilation_env.txt
+example_task/share/dpl
+example_task/bin
 
 # Prerequisites
 *.d
